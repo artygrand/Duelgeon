@@ -23,7 +23,7 @@ def change_resolution(w, h):
     base.win.requestProperties(props)
 
 
-def toggle_fullscreen(_size={'w': 0, 'h': 0}):
+def toggle_fullscreen(_size={'w': 1280, 'h': 720}):
     windowed = not base.win.isFullscreen()
     props = WindowProperties(base.win.getProperties())
 
