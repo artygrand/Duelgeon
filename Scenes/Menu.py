@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
 from math import *
-from random import *
 
-from panda3d.core import TextNode, DirectionalLight, PointLight, AmbientLight, PerspectiveLens
-from direct.task import Task
+from panda3d.core import TextNode, DirectionalLight, AmbientLight, PerspectiveLens
 from direct.gui.DirectGui import DirectFrame, DirectButton
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.actor.Actor import Actor
-from direct.particles.ParticleEffect import ParticleEffect
 
 from Scenes.BaseScene import BaseScene
 from Managers.Menu import MM
-from Utils import prefab
+from Game import prefab
+from Utils.format import hex_to_rgb
 
 
 class Menu(BaseScene):
@@ -154,31 +152,20 @@ class Menu(BaseScene):
         actor.setPos(0, 1, 0)
 
         moon = DirectionalLight('moon')
-        moon.setColor((.3, .35, .8, 1))
+        moon.setColor(hex_to_rgb('4d5acc'))
         moon.setShadowCaster(True, 2048, 2048)
         moon_np = scene.attachNewNode(moon)
         moon_np.setPos(-5, -5, 10)
         moon_np.lookAt(0, 0, 0)
         scene.setLight(moon_np)
 
-        bonfire = PointLight('bonfire')
-        bonfire.setColor((1, .5, .2, 1))
-        bonfire.setAttenuation((1, 0, 1))
-        bonfire.setShadowCaster(True, 2048, 2048)
-        bonfire_np = scene.attachNewNode(bonfire)
-        bonfire_np.setPos(0, -.5, 0)
-        scene.setLight(bonfire_np)
+        bonfire = prefab.Bonfire(scene)
+        bonfire.holder.setPos(0, -.08, .1)
 
         ambient = AmbientLight('alight')
-        ambient.setColor((.08, .08, .08, 1))
+        ambient.setColor(hex_to_rgb('141414'))
         ambient_np = scene.attachNewNode(ambient)
         scene.setLight(ambient_np)
-
-        floater = scene.attachNewNode("particle root")
-        floater.setPos((0, -.08, 0))
-        fire = ParticleEffect()
-        fire.loadConfig("assets/fx/bonfire.ptf")
-        fire.start(parent=floater, renderParent=self.root_node)
 
         def spin_camera_task(task):
             angle_degrees = task.time * 2.0
@@ -189,30 +176,9 @@ class Menu(BaseScene):
             base.camera.setPos(5 * sin(angle_radians), -5 * cos(angle_radians), 1)
             base.camera.setHpr(angle_degrees, 4, 0)
 
-            return Task.cont
+            return task.cont
 
-        base.taskMgr.add(spin_camera_task, 'spin_camera_task')
-
-        def bonfire_light_tilt_task(task, pd=[0, 0, 0], cd=[0]):
-            ox, oy, oz = 0, 0, .05  # original
-            cx, cy, cz = bonfire_np.getPos()  # current
-
-            if task.frame % 10 == 0:
-                tx, ty, tz = (ox + uniform(-.015, .015)), (oy + uniform(-.015, .015)), (oz + uniform(-.005, .005))
-                pd[0] = tx - cx / 10
-                pd[1] = ty - cy / 10
-                pd[2] = tz - cz / 10
-
-            bonfire_np.setPos(cx + pd[0], cy + pd[1], cz + pd[2])
-
-            if task.frame % 5 == 0:
-                cd[0] = uniform(-.1, .1)
-
-            bonfire.setColor((1 + cd[0], .5 + cd[0], .2 + cd[0], 1))
-
-            return Task.cont
-
-        base.taskMgr.add(bonfire_light_tilt_task, 'bonfire_light_tilt_task')
+        base.taskMgr.add(spin_camera_task, 'spin_camera')
 
     def esc_handler(self):
         if self.manager.state != 'Main':
