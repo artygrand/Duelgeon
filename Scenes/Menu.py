@@ -145,7 +145,6 @@ class Menu(BaseScene):
 
     def background(self):
         self.skybox = prefab.skybox('maps/menu/tex/mountains')
-        self.skybox.reparentTo(base.camera)
 
         scene = loader.loadModel('maps/menu/terrain.egg')
         scene.reparentTo(self.root_node)

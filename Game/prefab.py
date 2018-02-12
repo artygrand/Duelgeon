@@ -22,6 +22,8 @@ def skybox(texture):
     box.clearFog()
     box.setCompass()
 
+    box.reparentTo(base.camera)
+
     return box
 
 
