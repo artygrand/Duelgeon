@@ -140,6 +140,9 @@ class Menu(BaseScene):
         self.music.stop()  # or delete?
         self.ambientSound.stop()
 
+        base.taskMgr.remove('spin_camera')
+        base.taskMgr.remove('bonfire_light_pos')
+
     def background(self):
         self.skybox = prefab.skybox('maps/menu/tex/mountains')
         self.skybox.reparentTo(base.camera)
