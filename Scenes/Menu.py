@@ -141,7 +141,7 @@ class Menu(BaseScene):
         self.ambientSound.stop()
 
     def background(self):
-        self.skybox = prefab.skybox('maps/menu/tex/mountains.png')
+        self.skybox = prefab.skybox('maps/menu/tex/mountains')
         self.skybox.reparentTo(base.camera)
 
         scene = loader.loadModel('maps/menu/terrain.egg')

@@ -1,18 +1,25 @@
 from random import *
 
 from direct.particles.ParticleEffect import ParticleEffect
-from panda3d.core import PointLight
+from panda3d.core import PointLight, Texture
 
 from Utils.format import hex_to_rgb
 
 
 def skybox(texture):
-    box = loader.loadModel('geometry/box-inverted')
-    box.setTexture(loader.loadTexture(texture), 1)
+    box = loader.loadModel('geometry/skybox')
+    textures = {p: loader.loadTexture(texture + '_' + p + '.png') for p in ['u', 'l', 'f', 'r', 'b', 'd']}
+
+    for key, tex in textures.items():
+        tex.setWrapU(Texture.WM_clamp)
+        tex.setWrapV(Texture.WM_clamp)
+        box.find('**/' + key).setTexture(tex)
+
     box.setScale(512)
     box.setBin('background', 1)
     box.setDepthWrite(0)
     box.setLightOff()
+    box.clearFog()
     box.setCompass()
 
     return box
