@@ -21,7 +21,8 @@ class App(ShowBase):
     sceneNode = None
 
     def __init__(self):
-        self.load_config()
+        udir = self.get_user_dir()
+        self.load_config(udir)
         DGG.getDefaultFont().setPixelsPerUnit(100)
 
         ShowBase.__init__(self)
@@ -34,21 +35,27 @@ class App(ShowBase):
 
         self.accept('escape', self.quit)
         self.accept('alt-enter', win.toggle_fullscreen)
+        self.accept('f12', self.screenshot, [str(Filename.fromOsSpecific(udir + '/screenshots/scr'))])
 
-        self.sceneNode = render.attachNewNode('Scene node')
+        self.sceneNode = self.render.attachNewNode('Scene node')
 
         self.manager = GM(self)
         self.manager.request('Menu')
 
-    def load_config(self):
+    def get_user_dir(self):
+        udir = os.path.join(os.path.expanduser('~'), self.company, self.name)
+
+        if not os.path.exists(udir):
+            os.makedirs(udir)
+            os.makedirs(os.path.join(udir, 'screenshots'))
+
+        return udir
+
+    def load_config(self, udir):
         loadPrcFile('local.prc')
         loadPrcFileData('', 'window-title {}'.format(self.name))
 
-        basedir = os.path.join(os.path.expanduser('~'), self.company, self.name)
-        file = os.path.join(basedir, 'config-{}.prc'.format(self.version))
-
-        if not os.path.exists(basedir):
-            os.makedirs(basedir)
+        file = os.path.join(udir, 'config-{}.prc'.format(self.version))
 
         if os.path.exists(file):
             loadPrcFile(Filename.fromOsSpecific(file))
