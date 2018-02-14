@@ -154,7 +154,7 @@ class Menu(BaseScene):
         actor.setPos(0, 1, 0)
 
         moon = DirectionalLight('moon')
-        moon.setColor(hex_to_rgb('4d5acc'))
+        moon.setColor(hex_to_rgb('4d5acc', brightness=.2))
         moon.setShadowCaster(True, 2048, 2048)
         moon_np = scene.attachNewNode(moon)
         moon_np.setPos(-5, -5, 10)
