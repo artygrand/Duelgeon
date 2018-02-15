@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+
+from panda3d.core import LVector3
+
+
 def normalized(*args):
     vec = LVector3(*args)
     vec.normalize()
