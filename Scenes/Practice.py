@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-from panda3d.core import Vec3, BitMask32
-from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape, BulletSphereShape, BulletBoxShape
+from panda3d.core import Vec3, BitMask32, DirectionalLight
+from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShape,\
+    BulletTriangleMeshShape, BulletTriangleMesh
 
+from Utils.format import hex_to_rgb
 from Game import prefab
 from Game.Characters import Player
 from Game.Physics import World
@@ -51,26 +53,47 @@ class Practice(BaseScene):
         self.physics.resume()
 
     def load_scene(self):
-        # static
-        box = loader.loadModel('geometry/skybox')
-        box.reparentTo(self.root_node)
-        box.setPos(0, 3, 0)
+        # ground
+        sandbox = loader.loadModel('maps/practice/sandbox')
+        geom = sandbox.findAllMatches('**/+GeomNode')\
+            .getPath(0)\
+            .node()\
+            .getGeom(0)
+        mesh = BulletTriangleMesh()
+        mesh.addGeom(geom)
+        shape = BulletTriangleMeshShape(mesh, dynamic=False)
 
-        # ground plane
-        np = self.root_node.attachNewNode(BulletRigidBodyNode('Ground'))
-        np.node().addShape(BulletPlaneShape(Vec3(0, 0, 1), 0))
+        np = self.root_node.attachNewNode(BulletRigidBodyNode('Mesh'))
+        np.node().addShape(shape)
         np.setPos(0, 0, 0)
         np.setCollideMask(BitMask32.allOn())
         self.physics.world.attachRigidBody(np.node())
+        sandbox.reparentTo(np)
+
+        moon = DirectionalLight('moon')
+        moon.setColor(hex_to_rgb('ffffff'))
+        moon.setShadowCaster(True, 2048, 2048)
+        moon_np = self.root_node.attachNewNode(moon)
+        moon_np.setPos(-5, -5, 10)
+        moon_np.lookAt(0, 0, 0)
+        self.root_node.setLight(moon_np)
+
+        moon = DirectionalLight('moon')
+        moon.setColor(hex_to_rgb('ffffff'))
+        moon.setShadowCaster(True, 2048, 2048)
+        moon_np = self.root_node.attachNewNode(moon)
+        moon_np.setPos(5, 5, 10)
+        moon_np.lookAt(0, 0, 0)
+        self.root_node.setLight(moon_np)
 
         # dynamic sphere
         np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
-        np.node().addShape(BulletSphereShape(0.5))  # Vec3(0.5, 0.5, 0.5)
-        np.node().setMass(1.0)
-        np.setPos(0, 0, 2)
+        np.node().addShape(BulletSphereShape(1))  # Vec3(0.5, 0.5, 0.5)
+        np.node().setMass(3.0)
+        np.setPos(5, 5, 2)
         self.physics.world.attachRigidBody(np.node())
 
-        box = loader.loadModel('geometry/skybox')
+        box = loader.loadModel('geometry/ball')
         box.reparentTo(np)
 
         # dynamic box
@@ -80,5 +103,14 @@ class Practice(BaseScene):
         np.setPos(-1, -2, 2)
         self.physics.world.attachRigidBody(np.node())
 
-        box = loader.loadModel('geometry/skybox')
+        box = loader.loadModel('geometry/box')
+        box.reparentTo(np)
+
+        # static
+        np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
+        np.node().addShape(BulletBoxShape(Vec3(0.5, 0.5, 0.5)))
+        np.setPos(1, 2, 0.8)
+        self.physics.world.attachRigidBody(np.node())
+
+        box = loader.loadModel('geometry/box')
         box.reparentTo(np)
