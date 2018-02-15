@@ -112,41 +112,52 @@ class Character:
 
 class Player(Character, DirectObject):
     camera = None
+    settings = []
 
-    def attach_controls(self, controls):
-        inputState.watchWithModifiers('forward', controls['forward'])
-        inputState.watchWithModifiers('left', controls['left'])
-        inputState.watchWithModifiers('back', controls['back'])
-        inputState.watchWithModifiers('right', controls['right'])
+    def attach_controls(self, settings):
+        self.settings = settings
 
-        self.accept(controls['crouch'], self.crouch, [True])
-        self.accept(controls['crouch'] + '-up', self.crouch, [False])
-        self.accept(controls['jump'], self.jump)
-        self.accept(controls['ability1'], self.ability1, [True])
-        self.accept(controls['ability1'] + '-up', self.ability1, [False])
-        self.accept(controls['ability2'], self.ability2, [True])
-        self.accept(controls['ability2'] + '-up', self.ability2, [False])
-        self.accept(controls['ultimate'], self.ultimate)
+        inputState.watchWithModifiers('forward', settings['key_forward'])
+        inputState.watchWithModifiers('left', settings['key_left'])
+        inputState.watchWithModifiers('back', settings['key_back'])
+        inputState.watchWithModifiers('right', settings['key_right'])
+
+        self.accept(settings['key_crouch'], self.crouch, [True])
+        self.accept(settings['key_crouch'] + '-up', self.crouch, [False])
+        self.accept(settings['key_jump'], self.jump)
+        self.accept(settings['key_ability1'], self.ability1, [True])
+        self.accept(settings['key_ability1'] + '-up', self.ability1, [False])
+        self.accept(settings['key_ability2'], self.ability2, [True])
+        self.accept(settings['key_ability2'] + '-up', self.ability2, [False])
+        self.accept(settings['key_ultimate'], self.ultimate)
 
         base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
 
         if base.mouseWatcherNode.hasMouse():
             base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher')
 
-            inputState.watchWithModifiers('fire1', controls['fire1'])
-            inputState.watchWithModifiers('fire2', controls['fire2'])
+            inputState.watchWithModifiers('fire1', settings['key_fire1'])
+            inputState.watchWithModifiers('fire2', settings['key_fire2'])
 
     def mouse_watcher(self, task):
         if self.paused:
             return task.cont
 
-        mw = base.mouseWatcherNode
-        x, y = mw.getMouseX(), mw.getMouseY()
+        md = base.win.getPointer(0)
+        x, y = md.getX(), md.getY()
+        cx, cy = int(base.win.getXSize() / 2), int(base.win.getYSize() / 2)
 
-        base.win.movePointer(0, int(base.win.getXSize() / 2), int(base.win.getYSize() / 2))
-        self.omega = -x * 1000 * 2
+        base.win.movePointer(0, cx, cy)
+        self.omega = (cx - x) * self.settings['mouse_sensitivity'] / 10
         self.yaw = self.yaw + self.omega * globalClock.getDt()
-        self.pitch = self.pitch + y * 30
+
+        delta = (cy - y) * self.settings['mouse_sensitivity'] / 10
+        delta *= [1, -1][self.settings['invert_pitch']]
+        self.pitch = self.pitch + delta * globalClock.getDt()
+        if self.pitch > 90:
+            self.pitch = 90
+        if self.pitch < -90:
+            self.pitch = -90
 
         if inputState.isSet('fire1'):
             self.fire1()
@@ -177,7 +188,7 @@ class Player(Character, DirectObject):
         base.taskMgr.add(self.update_camera, 'player_camera')
 
     def update_camera(self, task):
-        self.camera.setHpr(self.yaw, self.pitch, 0)
+        self.camera.setHpr(self.char.getH(), self.pitch, 0)
         self.camera.setPos(self.char.movement_parent, 0, 0, (self.crouch_height if self.crouching else self.height)-.2)
 
         return task.cont

@@ -14,18 +14,20 @@ from Scenes.BaseScene import BaseScene
 class Practice(BaseScene):
     def __init__(self, root_node):
         self.root_node = root_node
-        controls = {
-            'forward': 'w',
-            'left': 'a',
-            'back': 's',
-            'right': 'd',
-            'crouch': 'lcontrol',
-            'jump': 'space',
-            'ability1': 'lshift',
-            'ability2': 'e',
-            'ultimate': 'q',
-            'fire1': 'mouse1',
-            'fire2': 'mouse3',
+        settings = {
+            'key_forward': 'w',
+            'key_left': 'a',
+            'key_back': 's',
+            'key_right': 'd',
+            'key_crouch': 'lcontrol',
+            'key_jump': 'space',
+            'key_ability1': 'lshift',
+            'key_ability2': 'e',
+            'key_ultimate': 'q',
+            'key_fire1': 'mouse1',
+            'key_fire2': 'mouse3',
+            'mouse_sensitivity': 75,
+            'invert_pitch': False
         }
 
         self.skybox = prefab.skybox('maps/practice/tex/sea')
@@ -34,7 +36,7 @@ class Practice(BaseScene):
         self.physics.node.reparentTo(self.root_node)
 
         self.player = Player(self.physics.world, root_node)
-        self.player.attach_controls(controls)
+        self.player.attach_controls(settings)
         self.player.set_camera(base.camera)
 
         self.load_scene()
