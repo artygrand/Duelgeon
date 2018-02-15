@@ -146,7 +146,7 @@ class Menu(BaseScene):
     def background(self):
         self.skybox = prefab.skybox('maps/menu/tex/mountains')
 
-        scene = loader.loadModel('maps/menu/terrain.egg')
+        scene = loader.loadModel('maps/menu/terrain')
         scene.reparentTo(self.root_node)
 
         actor = Actor('actors/char', {'walk': 'actors/char-walk', 'hands': 'actors/char-hands'})
