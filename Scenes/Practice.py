@@ -4,10 +4,13 @@ from panda3d.core import Vec3, BitMask32, DirectionalLight
 from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShape,\
     BulletTriangleMeshShape, BulletTriangleMesh
 
+from direct.gui.OnscreenText import OnscreenText
+
 from Utils.format import hex_to_rgb
 from Game import prefab
 from Game.Characters import Player
 from Game.Physics import World
+from Game.Gui import CharMarks
 from Scenes.BaseScene import BaseScene
 
 
@@ -38,6 +41,8 @@ class Practice(BaseScene):
         self.player = Player(self.physics.world, root_node)
         self.player.attach_controls(settings)
         self.player.set_camera(base.camera)
+
+        self.char_marks = CharMarks()
 
         self.load_scene()
 
@@ -90,13 +95,15 @@ class Practice(BaseScene):
 
         # dynamic sphere
         np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
-        np.node().addShape(BulletSphereShape(1))  # Vec3(0.5, 0.5, 0.5)
+        np.node().addShape(BulletSphereShape(1))
         np.node().setMass(3.0)
         np.setPos(5, 5, 2)
         self.physics.world.attachRigidBody(np.node())
 
-        box = loader.loadModel('geometry/ball')
-        box.reparentTo(np)
+        ball = loader.loadModel('geometry/ball')
+        ball.reparentTo(np)
+
+        self.char_marks.add('ball', ball, OnscreenText(text='sphere', scale=0.07), 1)
 
         # dynamic box
         np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
@@ -108,6 +115,8 @@ class Practice(BaseScene):
         box = loader.loadModel('geometry/box')
         box.reparentTo(np)
 
+        self.char_marks.add('box', box, OnscreenText(text='cube', scale=0.06), 0.5)
+
         # static
         np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
         np.node().addShape(BulletBoxShape(Vec3(0.5, 0.5, 0.5)))
@@ -116,3 +125,5 @@ class Practice(BaseScene):
 
         box = loader.loadModel('geometry/box')
         box.reparentTo(np)
+
+        self.char_marks.add('static', box, OnscreenText(text='static', scale=0.08), 0.5)
