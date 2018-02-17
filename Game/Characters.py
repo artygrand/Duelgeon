@@ -5,6 +5,7 @@ from panda3d.core import Vec3
 from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.DirectObject import DirectObject
 
+from Utils import win
 from Game.KCC import CharacterController
 
 
@@ -134,6 +135,7 @@ class Player(Character, DirectObject):
         base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
 
         if base.mouseWatcherNode.hasMouse():
+            win.center_cursor()
             base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher')
 
             inputState.watchWithModifiers('fire1', settings['key_fire1'])
@@ -145,13 +147,12 @@ class Player(Character, DirectObject):
 
         md = base.win.getPointer(0)
         x, y = md.getX(), md.getY()
-        cx, cy = int(base.win.getXSize() / 2), int(base.win.getYSize() / 2)
 
-        base.win.movePointer(0, cx, cy)
-        self.omega = (cx - x) * self.settings['mouse_sensitivity'] / 10
+        win.center_cursor()
+        self.omega = (base.win.getXSize() / 2 - x) * self.settings['mouse_sensitivity'] / 10
         self.yaw = self.yaw + self.omega * globalClock.getDt()
 
-        delta = (cy - y) * self.settings['mouse_sensitivity'] / 10
+        delta = (base.win.getYSize() / 2 - y) * self.settings['mouse_sensitivity'] / 10
         delta *= [1, -1][self.settings['invert_pitch']]
         self.pitch = self.pitch + delta * globalClock.getDt()
         if self.pitch > 90:

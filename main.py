@@ -23,7 +23,6 @@ class App(ShowBase):
     def __init__(self):
         udir = self.get_user_dir()
         self.load_config(udir)
-        DGG.getDefaultFont().setPixelsPerUnit(100)
 
         ShowBase.__init__(self)
         self.disableMouse()

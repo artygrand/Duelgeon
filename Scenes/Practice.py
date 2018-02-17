@@ -7,16 +7,18 @@ from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShap
 from direct.gui.OnscreenText import OnscreenText
 
 from Utils.format import hex_to_rgb
-from Game import prefab
+from Game import prefab, Gui
 from Game.Characters import Player
 from Game.Physics import World
-from Game.Gui import CharMarks
 from Scenes.BaseScene import BaseScene
 
 
 class Practice(BaseScene):
     def __init__(self, root_node):
+        BaseScene.__init__(self)
+
         self.root_node = root_node
+
         settings = {
             'key_forward': 'w',
             'key_left': 'a',
@@ -41,8 +43,10 @@ class Practice(BaseScene):
         self.player = Player(self.physics.world, root_node)
         self.player.attach_controls(settings)
         self.player.set_camera(base.camera)
+        self.player.char.setPos(0, 0, 0)
 
-        self.char_marks = CharMarks()
+        self.char_marks = Gui.CharMarks()
+        self.hud = Gui.HUD()
 
         self.load_scene()
 
@@ -62,10 +66,7 @@ class Practice(BaseScene):
     def load_scene(self):
         # ground
         sandbox = loader.loadModel('maps/practice/sandbox')
-        geom = sandbox.findAllMatches('**/+GeomNode')\
-            .getPath(0)\
-            .node()\
-            .getGeom(0)
+        geom = sandbox.findAllMatches('**/+GeomNode')[0].node().getGeom(0)
         mesh = BulletTriangleMesh()
         mesh.addGeom(geom)
         shape = BulletTriangleMeshShape(mesh, dynamic=False)
@@ -111,6 +112,8 @@ class Practice(BaseScene):
         np.node().setMass(1.0)
         np.setPos(-1, -2, 2)
         self.physics.world.attachRigidBody(np.node())
+
+        np.node().applyCentralImpulse((0, 2, 7))
 
         box = loader.loadModel('geometry/box')
         box.reparentTo(np)
