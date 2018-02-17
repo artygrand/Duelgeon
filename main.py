@@ -3,7 +3,7 @@
 import os
 
 # Panda3D
-from panda3d.core import AntialiasAttrib, Filename, loadPrcFileData, loadPrcFile
+from panda3d.core import AntialiasAttrib, Filename, loadPrcFileData, loadPrcFile, CullBinManager
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import DGG
 
@@ -40,6 +40,9 @@ class App(ShowBase):
 
         self.manager = GM(self)
         self.manager.request('Menu')
+
+        cull_manager = CullBinManager.getGlobalPtr()
+        cull_manager.addBin('onscreen', cull_manager.BTFixed, 60)
 
     def get_user_dir(self):
         udir = os.path.join(os.path.expanduser('~'), self.company, self.name)

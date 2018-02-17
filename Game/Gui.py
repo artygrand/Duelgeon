@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from panda3d.core import Point2, Point3
+from panda3d.core import Point2, Point3, VBase4
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
@@ -13,8 +13,11 @@ class CharMarks:
 
     def __init__(self):
         base.taskMgr.add(self.update, 'update char marks', 10)
+        self.frame = DirectFrame()
+        self.frame.setBin('onscreen', 1)
 
     def add(self, name, char, mark, height):
+        mark.reparentTo(self.frame)
         self.chars[name] = char
         self.marks[name] = mark
         self.heights[name] = height
@@ -32,16 +35,23 @@ class CharMarks:
 
     def get_pos(self, node, height):
         p3 = base.cam.getRelativePoint(render, node.getPos(render))
-        p2 = Point2()
-        pos = (0, 0, 2)
-        if base.camLens.project(p3, p2):
-            r2d = Point3(p2[0], 0, p2[1])
-            pos = pixel2d.getRelativePoint(render2d, r2d)
+        full = base.camLens.getProjectionMat().xform(VBase4(p3[0], p3[1], p3[2], 1.0))
+        p2 = 10.0, 10.0
 
-            pos[0] = (pos[0] / base.win.getXSize() - .5) * 2 * base.a2dRight
-            pos[2] = ((-pos[2] / base.win.getYSize() - .5) * -2) + height * 4 / p3[1]
+        if full[3] > 0:
+            full3 = 1.0 / full[3]
+            p2 = full[0] * full3, full[1] * full3
+
+        pos = aspect2d.getRelativePoint(render2d, Point3(p2[0], 0, p2[1]))
+        pos[2] = pos[2] + height * 4 / p3[1]
 
         return pos[0], pos[2]
+
+    def show(self):
+        self.frame.show()
+
+    def hide(self):
+        self.frame.hide()
 
 
 class HUD:
@@ -59,6 +69,7 @@ class PauseMenu:
         self.frame = DirectFrame(text='Pause', text_pos=(0, 0.38), text_fg=(1, 1, 1, 1), text_scale=0.1,
                                  frameColor=(0, 0, 0, 0.6), frameSize=(-.33, .33, 0.5, -0.5), pos=(0, 0, 0))
         self.frame.hide()
+        self.frame.setBin('onscreen', 2)
 
         pos = .25
         for text, cmd in {'Resume': resume, 'Options': 'opts', 'Main menu': 'Heroes', 'Exit': 'Exit'}.items():
