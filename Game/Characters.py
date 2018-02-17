@@ -10,6 +10,7 @@ from Game.KCC import CharacterController
 
 
 class Character:
+    name = 'Buster'
     height = 1.75
     crouch_height = 1.3
     step_height = 0.3
@@ -25,17 +26,21 @@ class Character:
     movement = Vec3(0, 0, 0)
     omega = 0
 
-    def __init__(self, world, parent):
+    def __init__(self, world, parent, name):
+        self.name = name
         self.char = CharacterController(world, parent, self.height, self.crouch_height, self.step_height, self.radius)
 
         self.resume()
-        base.taskMgr.add(self.__update, 'update_char_name')
+        base.taskMgr.add(self.__update, 'update_char_' + self.name)
 
     def resume(self):
         self.paused = False
 
     def pause(self):
         self.paused = True
+
+    def destroy(self):
+        base.taskMgr.remove('update_char_' + self.name)
 
     def __update(self, task):
         if self.paused:
@@ -195,4 +200,8 @@ class Player(Character, DirectObject):
         return task.cont
 
     def destroy(self):
+        super().destroy()
         self.ignoreAll()
+        base.taskMgr.remove('player_keyboard_watcher')
+        base.taskMgr.remove('player_mouse_watcher')
+        base.taskMgr.remove('player_camera')

@@ -6,15 +6,30 @@ from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 
 
-class CharMarks:
+class HasFrame:
+    def __init__(self, z):
+        self.frame = DirectFrame()
+        self.frame.setBin('onscreen', z)
+
+    def show(self):
+        self.frame.show()
+
+    def hide(self):
+        self.frame.hide()
+
+    def destroy(self):
+        self.frame.removeNode()
+
+
+class CharMarks(HasFrame):
     chars = {}
     marks = {}
     heights = {}
 
     def __init__(self):
+        HasFrame.__init__(self, 1)
+
         base.taskMgr.add(self.update, 'update char marks', 10)
-        self.frame = DirectFrame()
-        self.frame.setBin('onscreen', 1)
 
     def add(self, name, char, mark, height):
         mark.reparentTo(self.frame)
@@ -47,32 +62,37 @@ class CharMarks:
 
         return pos[0], pos[2]
 
-    def show(self):
-        self.frame.show()
 
-    def hide(self):
-        self.frame.hide()
-
-
-class HUD:
+class HUD(HasFrame):
     def __init__(self):
-        self.crosshair = OnscreenImage('gui/crosshair.png', pos=(0, 0, 0), scale=0.03)
+        HasFrame.__init__(self, 2)
+
+        self.crosshair = OnscreenImage('gui/crosshair.png', pos=(0, 0, 0), scale=0.03, parent=self.frame)
         self.crosshair.setTransparency(1)
         self.crosshair.setColor(1, 1, 1, 0.7)
-        self.crosshair.setBin('transparent', 0)
 
 
-class PauseMenu:
+class PauseMenu(HasFrame):
     def __init__(self, resume):
+        HasFrame.__init__(self, 3)
+
         button = loader.loadModel('gui/pause-button')
 
-        self.frame = DirectFrame(text='Pause', text_pos=(0, 0.38), text_fg=(1, 1, 1, 1), text_scale=0.1,
-                                 frameColor=(0, 0, 0, 0.6), frameSize=(-.33, .33, 0.5, -0.5), pos=(0, 0, 0))
+        self.frame['text'] = 'Pause'
+        self.frame['text_pos'] = 0, 0.38
+        self.frame['text_fg'] = 1, 1, 1, 1
+        self.frame['text_scale'] = 0.1
+        self.frame['frameColor'] = 0, 0, 0, 0.6
+        self.frame['frameSize'] = -.33, .33, 0.5, -0.5
+        self.frame.setPos(0, 0, 0)
         self.frame.hide()
-        self.frame.setBin('onscreen', 2)
 
         pos = .25
-        for text, cmd in {'Resume': resume, 'Options': 'opts', 'Main menu': 'Heroes', 'Exit': 'Exit'}.items():
+        for text, cmd in {
+                'Resume': (resume, []),
+                'Options': (resume, []),
+                'Main menu': (base.messenger.send, ['Menu']),
+                'Exit': (base.messenger.send, ['exit'])}.items():
             DirectButton(
                 parent=self.frame,
                 text=text,
@@ -87,12 +107,7 @@ class PauseMenu:
                 scale=0.5,
                 rolloverSound=None,
                 clickSound=None,
-                command=cmd
+                command=cmd[0],
+                extraArgs=cmd[1],
             )
             pos -= .20
-
-    def show(self):
-        self.frame.show()
-
-    def hide(self):
-        self.frame.hide()

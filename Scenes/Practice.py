@@ -40,7 +40,7 @@ class Practice(BaseScene):
         self.physics = World()
         self.physics.node.reparentTo(self.root_node)
 
-        self.player = Player(self.physics.world, root_node)
+        self.player = Player(self.physics.world, root_node, 'Player')
         self.player.attach_controls(settings)
         self.player.set_camera(base.camera)
         self.player.char.setPos(0, 0, 0)
@@ -51,6 +51,10 @@ class Practice(BaseScene):
         self.load_scene()
 
     def destroy(self):
+        self.esc_handler()
+        self.char_marks.destroy()
+        self.pause_menu.destroy()
+        self.hud.destroy()
         self.root_node.removeNode()
         self.skybox.removeNode()
         self.player.destroy()

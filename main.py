@@ -33,6 +33,7 @@ class App(ShowBase):
         self.enableParticles()
 
         self.accept('escape', self.quit)
+        self.accept('exit', self.userExit)
         self.accept('alt-enter', win.toggle_fullscreen)
         self.accept('f12', self.screenshot, [str(Filename.fromOsSpecific(udir + '/screenshots/scr'))])
 

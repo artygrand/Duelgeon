@@ -10,6 +10,7 @@ class GM(FSM):
     def __init__(self, app):
         FSM.__init__(self, "GM")
         self.app = app
+        self.accept('Menu', self.request, ['Menu'])
 
     def enterMenu(self):
         self.accept('Play-Arcade', self.request, ['Game', 'Arcade'])
@@ -19,14 +20,13 @@ class GM(FSM):
 
         self.accept('Menu-Training', self.request, ['Training'])
         self.accept('Menu-Heroes', self.request, ['HeroEditor'])
-        self.accept('Menu-Exit', self.app.userExit)
 
         self.app.scene = Menu.Menu(self.app.sceneNode.attachNewNode('Current'))
         self.app.scene.show('main')
 
     def exitMenu(self):
         for e in ['Play-Arcade', 'Play-Hardcore', 'Play-Coop', 'Play-Versus',
-                  'Menu-Training', 'Menu-Heroes', 'Menu-Exit']:
+                  'Menu-Training', 'Menu-Heroes']:
             self.ignore(e)
 
         self.app.scene.destroy()
@@ -44,8 +44,8 @@ class GM(FSM):
         self.app.scene = Practice.Practice(self.app.sceneNode.attachNewNode('Current'))
 
     def exitTraining(self):
-        win.show_cursor()
         self.app.scene.destroy()
+        win.show_cursor()
 
     def enterHeroEditor(self):
         self.app.scene = HeroEditor.HeroEditor(self.app.sceneNode.attachNewNode('Current'))

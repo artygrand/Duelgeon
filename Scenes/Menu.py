@@ -60,8 +60,8 @@ class Menu(BaseScene):
         button = loader.loadModel('gui/menu-button')
         clamp_texture(('gui/menu-button-hover.png', 'gui/menu-button-click.png'))
         pos = .0
-        for cmd, text in {'Play': 'Play', 'Training': 'Training', 'Heroes': 'Heroes',
-                          'Options': 'Options', 'Exit': 'Exit'}.items():
+        for cmd, text in {'Menu-Play': 'Play', 'Menu-Training': 'Training', 'Menu-Heroes': 'Heroes',
+                          'Menu-Options': 'Options', 'exit': 'Exit'}.items():
             DirectButton(
                 text=text,
                 scale=0.6,
@@ -73,7 +73,7 @@ class Menu(BaseScene):
                 text_align=TextNode.ALeft,
                 text_pos=(0.06, -0.03),
                 command=base.messenger.send,
-                extraArgs=['Menu-' + cmd],
+                extraArgs=[cmd],
                 rolloverSound=None,
                 clickSound=None,
                 relief=None,
