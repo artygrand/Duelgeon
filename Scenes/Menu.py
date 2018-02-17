@@ -2,7 +2,7 @@
 
 from math import *
 
-from panda3d.core import TextNode, DirectionalLight, AmbientLight, PerspectiveLens
+from panda3d.core import TextNode, DirectionalLight, AmbientLight, PerspectiveLens, Texture
 from direct.gui.DirectGui import DirectFrame, DirectButton
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.actor.Actor import Actor
@@ -10,7 +10,7 @@ from direct.actor.Actor import Actor
 from Scenes.BaseScene import BaseScene
 from Managers.Menu import MM
 from Game import prefab
-from Utils.format import hex_to_rgb
+from Utils.format import hex_to_rgb, clamp_texture
 
 
 class Menu(BaseScene):
@@ -24,6 +24,8 @@ class Menu(BaseScene):
     skybox = None
 
     def __init__(self, root_node):
+        BaseScene.__init__(self)
+
         self.root_node = root_node
 
         self.manager = MM(self)
@@ -47,32 +49,40 @@ class Menu(BaseScene):
         self.ambientSound.setVolume(.7)
 
     def main_frame(self):
-        self.main = DirectFrame(frameSize=(-.4, .4, 1, -1), pos=(base.a2dLeft+.5, 0, 0), frameColor=(0, 0, 0, .6))
+        tex = clamp_texture('gui/menu-frame.png')
+        self.main = DirectFrame(frameSize=(-.4, .4, 1, -1), pos=(base.a2dLeft+.4, 0, 0), frameTexture=tex)
         self.main.setTransparency(1)
         self.main.hide()
 
         logo = OnscreenImage(image='gui/logo.png', pos=(0, 0, .75), scale=(.30, 1, .15), parent=self.main)
         logo.setTransparency(1)
 
+        button = loader.loadModel('gui/menu-button')
+        clamp_texture(('gui/menu-button-hover.png', 'gui/menu-button-click.png'))
         pos = .0
         for cmd, text in {'Play': 'Play', 'Training': 'Training', 'Heroes': 'Heroes',
                           'Options': 'Options', 'Exit': 'Exit'}.items():
             DirectButton(
                 text=text,
-                scale=0.07,
+                scale=0.6,
                 pos=(-.35, 0, pos),
                 text0_fg=(1, 1, 1, 1),
-                text2_fg=(.82, .72, .05, 1),
+                text2_fg=(0, 0, 0, 1),
                 text1_fg=(.6, .6, .6, 1),
+                text_scale=0.1,
                 text_align=TextNode.ALeft,
+                text_pos=(0.06, -0.03),
                 command=base.messenger.send,
                 extraArgs=['Menu-' + cmd],
                 rolloverSound=None,
                 clickSound=None,
                 relief=None,
+                geom=(button.find('**/button'), button.find('**/button-click'),
+                      button.find('**/button-hover'), button.find('**/button-disabled')),
+                frameSize=(-.1, 1, .1, -.1),
                 parent=self.main
             )
-            pos -= .10
+            pos -= .1
 
     def modes_frame(self):
         self.modes = DirectFrame(frameSize=(base.a2dLeft + .05, base.a2dRight - .05, .95, -.95),

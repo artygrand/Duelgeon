@@ -1,0 +1,113 @@
+<Comment> {
+  "egg-texture-cards -o button.egg -g -0.5,0.5,-.15,.15 -p 256,50 button.png button-click.png button-hover.png button-disabled.png"
+}
+<Texture> button-hover {
+  pause-button-hover.png
+}
+<Texture> button-disabled {
+  pause-button-disabled.png
+}
+<Texture> button-click {
+  pause-button-click.png
+}
+<Texture> button {
+  pause-button.png
+}
+<Group> {
+  <Switch> { 1 }
+  <Scalar> fps { 2 }
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.5 0.15 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.5 -0.15 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.5 -0.15 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.5 0.15 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 4 {
+      -0.5 0.15 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 5 {
+      -0.5 -0.15 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 6 {
+      0.5 -0.15 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 7 {
+      0.5 0.15 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 8 {
+      -0.5 0.15 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 9 {
+      -0.5 -0.15 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 10 {
+      0.5 -0.15 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 11 {
+      0.5 0.15 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 12 {
+      -0.5 0.15 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 13 {
+      -0.5 -0.15 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 14 {
+      0.5 -0.15 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 15 {
+      0.5 0.15 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> button {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { button }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> button-click {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { button-click }
+      <VertexRef> { 4 5 6 7 <Ref> { vpool } }
+    }
+  }
+  <Group> button-hover {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { button-hover }
+      <VertexRef> { 8 9 10 11 <Ref> { vpool } }
+    }
+  }
+  <Group> button-disabled {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { button-disabled }
+      <VertexRef> { 12 13 14 15 <Ref> { vpool } }
+    }
+  }
+}

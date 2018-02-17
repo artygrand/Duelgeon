@@ -17,6 +17,10 @@ def show_cursor():
     base.win.requestProperties(props)
 
 
+def center_cursor():
+    return base.win.movePointer(0, int(base.win.getXSize() / 2), int(base.win.getYSize() / 2))
+
+
 def change_resolution(w, h):
     props = WindowProperties()
     props.setSize(w, h)
