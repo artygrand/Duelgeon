@@ -9,7 +9,7 @@ from direct.actor.Actor import Actor
 
 from Scenes.BaseScene import BaseScene
 from Managers.Menu import MM
-from Game import prefab
+from App import prefab
 from Utils.format import hex_to_rgb, clamp_texture
 
 

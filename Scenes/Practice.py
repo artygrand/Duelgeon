@@ -7,9 +7,10 @@ from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShap
 from direct.gui.OnscreenText import OnscreenText
 
 from Utils.format import hex_to_rgb
-from Game import prefab, Gui
-from Game.Characters import Player
-from Game.Physics import World
+from Utils.geom import bullet_shape_from
+from App import prefab, Gui
+from App.Characters import Player
+from App.Physics import World
 from Scenes.BaseScene import BaseScene
 
 

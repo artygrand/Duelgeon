@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from Utils import win
-from Game.Gui import PauseMenu
+from App.Gui import PauseMenu
 
 
 class BaseScene:

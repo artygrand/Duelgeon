@@ -6,7 +6,8 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.DirectObject import DirectObject
 
 from Utils import win
-from Game.KCC import CharacterController
+from App.KCC import CharacterController
+from App.Options import Options
 
 
 class Character:
@@ -118,35 +119,33 @@ class Character:
 
 class Player(Character, DirectObject):
     camera = None
-    settings = []
 
-    def attach_controls(self, settings):
-        self.settings = settings
+    def attach_controls(self):
+        inputState.watchWithModifiers('forward', Options.key_forward)
+        inputState.watchWithModifiers('left', Options.key_left)
+        inputState.watchWithModifiers('back', Options.key_back)
+        inputState.watchWithModifiers('right', Options.key_right)
 
-        inputState.watchWithModifiers('forward', settings['key_forward'])
-        inputState.watchWithModifiers('left', settings['key_left'])
-        inputState.watchWithModifiers('back', settings['key_back'])
-        inputState.watchWithModifiers('right', settings['key_right'])
-
-        self.accept(settings['key_crouch'], self.crouch, [True])
-        self.accept(settings['key_crouch'] + '-up', self.crouch, [False])
-        self.accept(settings['key_jump'], self.jump)
-        self.accept(settings['key_ability1'], self.ability1, [True])
-        self.accept(settings['key_ability1'] + '-up', self.ability1, [False])
-        self.accept(settings['key_ability2'], self.ability2, [True])
-        self.accept(settings['key_ability2'] + '-up', self.ability2, [False])
-        self.accept(settings['key_ultimate'], self.ultimate)
+        self.accept(Options.key_crouch, self.crouch, [True])
+        self.accept(Options.key_crouch + '-up', self.crouch, [False])
+        self.accept(Options.key_jump, self.jump)
+        self.accept(Options.key_ability1, self.ability1, [True])
+        self.accept(Options.key_ability1 + '-up', self.ability1, [False])
+        self.accept(Options.key_ability2, self.ability2, [True])
+        self.accept(Options.key_ability2 + '-up', self.ability2, [False])
+        self.accept(Options.key_ultimate, self.ultimate)
 
         base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
 
         if base.mouseWatcherNode.hasMouse():
             win.center_cursor()
-            base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher')
+            base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher', appendTask=True,
+                             extraArgs=[Options.mouse_sensitivity, Options.invert_mouse])
 
-            inputState.watchWithModifiers('fire1', settings['key_fire1'])
-            inputState.watchWithModifiers('fire2', settings['key_fire2'])
+            inputState.watchWithModifiers('fire1', Options.key_fire1)
+            inputState.watchWithModifiers('fire2', Options.key_fire2)
 
-    def mouse_watcher(self, task):
+    def mouse_watcher(self, sens, invert, task):
         if self.paused:
             return task.cont
 
@@ -154,12 +153,12 @@ class Player(Character, DirectObject):
         x, y = md.getX(), md.getY()
 
         win.center_cursor()
-        self.omega = (base.win.getXSize() / 2 - x) * self.settings['mouse_sensitivity'] / 10
-        self.yaw = self.yaw + self.omega * globalClock.getDt()
+        self.omega = (base.win.getXSize() / 2 - x) * sens * 5  # TODO проверить на разных разрешениях
+        self.yaw = self.yaw + self.omega
 
-        delta = (base.win.getYSize() / 2 - y) * self.settings['mouse_sensitivity'] / 10
-        delta *= [1, -1][self.settings['invert_pitch']]
-        self.pitch = self.pitch + delta * globalClock.getDt()
+        delta = (base.win.getYSize() / 2 - y) * sens / 50
+        delta *= [1, -1][invert]
+        self.pitch = self.pitch + delta
         if self.pitch > 90:
             self.pitch = 90
         if self.pitch < -90:
@@ -200,7 +199,7 @@ class Player(Character, DirectObject):
         return task.cont
 
     def destroy(self):
-        super().destroy()
+        Character.destroy(self)
         self.ignoreAll()
         base.taskMgr.remove('player_keyboard_watcher')
         base.taskMgr.remove('player_mouse_watcher')

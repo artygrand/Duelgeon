@@ -544,6 +544,7 @@ class CharacterController:
         # Set default
         self.capsule = self.__walk_capsule
         self.capsule_node = self.__walk_capsule_node
+        self.capsule_node.node().setMass(7.0)
 
         # Init
         self.__update_capsule()

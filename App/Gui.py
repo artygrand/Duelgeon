@@ -91,8 +91,8 @@ class PauseMenu(HasFrame):
         for text, cmd in {
                 'Resume': (resume, []),
                 'Options': (resume, []),
-                'Main menu': (base.messenger.send, ['Menu']),
-                'Exit': (base.messenger.send, ['exit'])}.items():
+                'Leave game': (base.messenger.send, ['Menu']),
+                'Exit to desktop': (base.messenger.send, ['exit'])}.items():
             DirectButton(
                 parent=self.frame,
                 text=text,
