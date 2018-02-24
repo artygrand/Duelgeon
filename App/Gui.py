@@ -197,7 +197,7 @@ class OptionsMenu(HasFrame):
         elif item['type'] == 'check':
 
             control = DirectCheckButton(
-                scale=.04, pos=(.58, 0, pos_z), parent=canvas, indicatorValue=int(item['value']),
+                scale=.04, pos=(.58, 0, pos_z), parent=canvas, indicatorValue=item['value'],
                 command=self.change, extraArgs=[item['name']], boxRelief=DGG.FLAT, relief=DGG.FLAT,
                 boxImage=('gui/checkbox-disabled.png', 'gui/checkbox-enabled.png', None)
             )

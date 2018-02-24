@@ -53,6 +53,10 @@ class Options:
         for name, val in cls.__config['opts'].items():
             if hasattr(cls, name):
                 cls.__default[name] = getattr(cls, name)
+
+                if val.isdigit():
+                    val = int(val)
+
                 setattr(cls, name, val)
 
     @classmethod
@@ -80,6 +84,16 @@ class Options:
         win.toggle_fullscreen(cls.fullscreen)
         win.change_resolution(*cls.win_size.split())
         base.camLens.setFov(float(cls.fov))
+
+        if cls.volume == 0:
+            base.disableAllAudio()
+        else:
+            base.enableAllAudio()
+
+        base.enableMusic(cls.music_vol > 0)
+        base.enableSoundEffects(cls.sfx_vol > 0)
+        base.musicManager.set_volume(cls.music_vol * cls.volume / 10000)
+        base.sfxManagerList[0].set_volume(cls.sfx_vol * cls.volume / 10000)
 
     @classmethod
     def save(cls):
