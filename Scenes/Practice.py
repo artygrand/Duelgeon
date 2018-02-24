@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+from math import *
+
 from panda3d.core import Vec3, BitMask32, DirectionalLight
-from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShape,\
-    BulletTriangleMeshShape, BulletTriangleMesh
+from panda3d.bullet import BulletRigidBodyNode, BulletSphereShape, BulletBoxShape
 
 from direct.gui.OnscreenText import OnscreenText
 
@@ -18,33 +19,17 @@ class Practice(BaseScene):
     def __init__(self, root_node):
         BaseScene.__init__(self)
 
-        self.root_node = root_node
-
-        settings = {
-            'key_forward': 'w',
-            'key_left': 'a',
-            'key_back': 's',
-            'key_right': 'd',
-            'key_crouch': 'lcontrol',
-            'key_jump': 'space',
-            'key_ability1': 'lshift',
-            'key_ability2': 'e',
-            'key_ultimate': 'q',
-            'key_fire1': 'mouse1',
-            'key_fire2': 'mouse3',
-            'mouse_sensitivity': 75,
-            'invert_pitch': False
-        }
+        self.root_node = root_node.attachNewNode('Training')
 
         self.skybox = prefab.skybox('maps/practice/tex/sea')
 
         self.physics = World()
         self.physics.node.reparentTo(self.root_node)
 
-        self.player = Player(self.physics.world, root_node, 'Player')
-        self.player.attach_controls(settings)
+        self.player = Player(self.physics.world, self.root_node, 'Player')
+        self.player.attach_controls()
         self.player.set_camera(base.camera)
-        self.player.char.setPos(0, 0, 0)
+        self.player.char.setPos(0, 0, 10)
 
         self.char_marks = Gui.CharMarks()
         self.hud = Gui.HUD()
@@ -71,13 +56,8 @@ class Practice(BaseScene):
     def load_scene(self):
         # ground
         sandbox = loader.loadModel('maps/practice/sandbox')
-        geom = sandbox.findAllMatches('**/+GeomNode')[0].node().getGeom(0)
-        mesh = BulletTriangleMesh()
-        mesh.addGeom(geom)
-        shape = BulletTriangleMeshShape(mesh, dynamic=False)
-
         np = self.root_node.attachNewNode(BulletRigidBodyNode('Mesh'))
-        np.node().addShape(shape)
+        np.node().addShape(bullet_shape_from(sandbox))
         np.setPos(0, 0, 0)
         np.setCollideMask(BitMask32.allOn())
         self.physics.world.attachRigidBody(np.node())
@@ -91,8 +71,8 @@ class Practice(BaseScene):
         moon_np.lookAt(0, 0, 0)
         self.root_node.setLight(moon_np)
 
-        moon = DirectionalLight('moon')
-        moon.setColor(hex_to_rgb('ffffff'))
+        moon = DirectionalLight('sun')
+        moon.setColor(hex_to_rgb('666666'))
         moon.setShadowCaster(True, 2048, 2048)
         moon_np = self.root_node.attachNewNode(moon)
         moon_np.setPos(5, 5, 10)
@@ -133,5 +113,18 @@ class Practice(BaseScene):
 
         box = loader.loadModel('geometry/box')
         box.reparentTo(np)
+
+        def move_box(task):
+            angle_degrees = task.time * 12.0
+            if angle_degrees > 360:
+                angle_degrees -= 360
+
+            angle_radians = angle_degrees * (pi / 180)
+            np.setPos(5 * sin(angle_radians), -5 * cos(angle_radians), .5)
+            np.setHpr(angle_degrees, 4, 0)
+
+            return task.cont
+
+        base.taskMgr.add(move_box, 'move_box')
 
         self.char_marks.add('static', box, OnscreenText(text='static', scale=0.08), 0.5)

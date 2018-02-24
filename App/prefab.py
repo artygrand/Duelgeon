@@ -69,3 +69,6 @@ class Bonfire:
         self.plight.setColor((self.co[0] + self.ld, self.co[1] + self.ld, self.co[2] + self.ld, self.co[3]))
 
         return task.cont
+
+    def destroy(self):
+        base.taskMgr.remove('bonfire_light_pos')

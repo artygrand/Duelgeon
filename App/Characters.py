@@ -6,6 +6,7 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.DirectObject import DirectObject
 
 from Utils import win
+import App
 from App.KCC import CharacterController
 from App.Options import Options
 
@@ -35,16 +36,16 @@ class Character:
         base.taskMgr.add(self.__update, 'update_char_' + self.name)
 
     def resume(self):
-        self.paused = False
+        App.paused = False
 
     def pause(self):
-        self.paused = True
+        App.paused = True
 
     def destroy(self):
         base.taskMgr.remove('update_char_' + self.name)
 
     def __update(self, task):
-        if self.paused:
+        if App.paused:
             return task.cont
 
         movement = copy(self.movement)
@@ -67,7 +68,7 @@ class Character:
         self.omega = omega
 
     def jump(self):
-        if self.paused:
+        if App.paused:
             return
 
         self.char.start_jump(self.jump_height)
@@ -87,37 +88,37 @@ class Character:
             self.char.stop_fly()
 
     def ability1(self, start):
-        if self.paused:
+        if App.paused:
             return
 
         print('ability1', start)
 
     def ability2(self, start):
-        if self.paused:
+        if App.paused:
             return
 
         print('ability2', start)
 
-    def ultimate(self):
-        if self.paused:
+    def ability3(self):
+        if App.paused:
             return
 
         print('ultimate start')
 
     def fire1(self):
-        if self.paused:
+        if App.paused:
             return
 
         print('primary fired')
 
     def fire2(self):
-        if self.paused:
+        if App.paused:
             return
 
         print('secondary fired')
 
 
-class Player(Character, DirectObject):
+class Player(Character):
     camera = None
 
     def attach_controls(self):
@@ -126,27 +127,27 @@ class Player(Character, DirectObject):
         inputState.watchWithModifiers('back', Options.key_back)
         inputState.watchWithModifiers('right', Options.key_right)
 
-        self.accept(Options.key_crouch, self.crouch, [True])
-        self.accept(Options.key_crouch + '-up', self.crouch, [False])
-        self.accept(Options.key_jump, self.jump)
-        self.accept(Options.key_ability1, self.ability1, [True])
-        self.accept(Options.key_ability1 + '-up', self.ability1, [False])
-        self.accept(Options.key_ability2, self.ability2, [True])
-        self.accept(Options.key_ability2 + '-up', self.ability2, [False])
-        self.accept(Options.key_ultimate, self.ultimate)
+        base.accept(Options.key_crouch, self.crouch, [True])
+        base.accept(Options.key_crouch + '-up', self.crouch, [False])
+        base.accept(Options.key_jump, self.jump)
+        base.accept(Options.key_ability1, self.ability1, [True])
+        base.accept(Options.key_ability1 + '-up', self.ability1, [False])
+        base.accept(Options.key_ability2, self.ability2, [True])
+        base.accept(Options.key_ability2 + '-up', self.ability2, [False])
+        base.accept(Options.key_ability3, self.ability3)
 
         base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
 
         if base.mouseWatcherNode.hasMouse():
             win.center_cursor()
             base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher', appendTask=True,
-                             extraArgs=[Options.mouse_sensitivity, Options.invert_mouse])
+                             extraArgs=[int(Options.mouse_sensitivity), Options.invert_mouse])
 
             inputState.watchWithModifiers('fire1', Options.key_fire1)
             inputState.watchWithModifiers('fire2', Options.key_fire2)
 
     def mouse_watcher(self, sens, invert, task):
-        if self.paused:
+        if App.paused:
             return task.cont
 
         md = base.win.getPointer(0)
@@ -172,7 +173,7 @@ class Player(Character, DirectObject):
         return task.cont
 
     def keyboard_watcher(self, task):
-        if self.paused:
+        if App.paused:
             return task.cont
 
         m = Vec3(0, 0, 0)
@@ -200,7 +201,6 @@ class Player(Character, DirectObject):
 
     def destroy(self):
         Character.destroy(self)
-        self.ignoreAll()
         base.taskMgr.remove('player_keyboard_watcher')
         base.taskMgr.remove('player_mouse_watcher')
         base.taskMgr.remove('player_camera')

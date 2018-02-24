@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 from Utils import win
-from App.Gui import PauseMenu
+from App.Gui import PauseMenu, OptionsMenu
 
 
 class BaseScene:
     paused = False
 
     def __init__(self):
-        self.pause_menu = PauseMenu(self.esc_handler)
+        self.pause_menu = PauseMenu()  # self.esc_handler
+        base.accept('Options', OptionsMenu)
 
     def esc_handler(self):
         if self.paused:

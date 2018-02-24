@@ -3,6 +3,7 @@
 from panda3d.core import NodePath, Vec3
 from panda3d.bullet import BulletWorld, BulletDebugNode
 
+import App
 
 class World:
     def __init__(self):
@@ -23,6 +24,8 @@ class World:
         base.taskMgr.remove('update_world')
 
     def update(self, task):
+        if App.paused:
+            return task.cont
         self.world.doPhysics(globalClock.getDt())
 
         return task.cont

@@ -1,49 +1,50 @@
 #!/usr/bin/env python3
+# -*- coding: utf_8 -*-
 
 import os
 
 # Panda3D
-from panda3d.core import AntialiasAttrib, Filename, loadPrcFileData, loadPrcFile, CullBinManager
+from panda3d.core import AntialiasAttrib, Filename, loadPrcFile
 from direct.showbase.ShowBase import ShowBase
-from direct.gui.DirectGui import DGG
 
 # Game
 from Utils import win
-from Managers.Game import GM
+from App.Managers import GameManager
+from App.Options import Options
+from App.Gui import Loading
 
 
 class App(ShowBase):
-    company = "Lone Tentacle"
-    name = "Duelgeon"
-    version = "0.1.0"
-
-    scene = None
-    sceneNode = None
+    company = 'Lone Tentacle'
+    name = 'Duelgeon'
+    version = '0.1.0'
 
     def __init__(self):
-        udir = self.get_user_dir()
-        self.load_config(udir)
-
         ShowBase.__init__(self)
+
+        udir = self.get_user_dir()
+        Options.load(udir + '/config.ini')
+        Options.apply()
+
         self.disableMouse()
-        self.setBackgroundColor(0, 0, 0)
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         self.render.setShaderAuto()
 
         self.enableParticles()
 
-        self.accept('escape', self.quit)
-        self.accept('exit', self.userExit)
+        self.accept('Exit', self.userExit)
         self.accept('alt-enter', win.toggle_fullscreen)
         self.accept('f12', self.screenshot, [str(Filename.fromOsSpecific(udir + '/screenshots/scr'))])
 
-        self.sceneNode = self.render.attachNewNode('Scene node')
+        base.buttonThrowers[0].node().setButtonDownEvent('Any-key-pressed')
 
-        self.manager = GM(self)
-        self.manager.request('Menu')
+        manager = GameManager()
+        loading = Loading()
+        loading.show()
 
-        cull_manager = CullBinManager.getGlobalPtr()
-        cull_manager.addBin('onscreen', cull_manager.BTFixed, 60)
+        def start(task):
+            manager.request('Menu')
+        self.taskMgr.doMethodLater(.1, start, 'Show menu')
 
     def get_user_dir(self):
         udir = os.path.join(os.path.expanduser('~'), self.company, self.name)
@@ -54,19 +55,8 @@ class App(ShowBase):
 
         return udir
 
-    def load_config(self, udir):
-        loadPrcFile('local.prc')
-        loadPrcFileData('', 'window-title {}'.format(self.name))
-
-        file = os.path.join(udir, 'config-{}.prc'.format(self.version))
-
-        if os.path.exists(file):
-            loadPrcFile(Filename.fromOsSpecific(file))
-
-    def quit(self):
-        self.scene.esc_handler()
-
 
 if __name__ == '__main__':
+    loadPrcFile('local.prc')
     app = App()
     app.run()
