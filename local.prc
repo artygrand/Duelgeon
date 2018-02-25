@@ -6,6 +6,7 @@ background-color 0.0 0.0 0.0
 sync-video 0
 framebuffer-multisample 1
 multisamples 2
+basic-shaders-only #f
 
 textures-auto-power-2 0
 textures-power-2 0

@@ -123,7 +123,7 @@ class Options:
                 'name': 'fov',
                 'type': 'slider',
                 'value': cls.fov,
-                'range': (60, 120)
+                'range': (70, 110)
             },
 
             {'type': 'separator'},
