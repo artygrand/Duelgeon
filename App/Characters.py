@@ -2,13 +2,30 @@
 
 from copy import copy
 from panda3d.core import Vec3
-from direct.showbase.InputStateGlobal import inputState
-from direct.showbase.DirectObject import DirectObject
 
-from Utils import win
 import App
 from App.KCC import CharacterController
-from App.Options import Options
+
+
+class Dummy:
+    def __init__(self):
+        self.body = render.attachNewNode('Free camera')
+        self.movement = Vec3(0)
+        self.omega = 0
+        self.pitch = 0
+
+        base.taskMgr.add(self.__update, 'update_dummy_character')
+
+        self.getHpr = self.body.getHpr
+        self.getPos = self.body.getPos
+        self.setHpr = self.body.setHpr
+        self.setPos = self.body.setPos
+
+    def __update(self, task):
+        self.body.setPos(self.body.getPos() + self.body.getQuat(render).xform(self.movement) / 4)
+        self.body.setHpr(self.body.getH() + self.omega * globalClock.getDt(), self.pitch, 0)
+
+        return task.cont
 
 
 class Character:
@@ -31,6 +48,9 @@ class Character:
     def __init__(self, world, parent, name):
         self.name = name
         self.char = CharacterController(world, parent, self.height, self.crouch_height, self.step_height, self.radius)
+
+        self.getHpr = self.char.getHpr
+        self.getPos = self.char.getPos
 
         self.resume()
         base.taskMgr.add(self.__update, 'update_char_' + self.name)
@@ -116,91 +136,3 @@ class Character:
             return
 
         print('secondary fired')
-
-
-class Player(Character):
-    camera = None
-
-    def attach_controls(self):
-        inputState.watchWithModifiers('forward', Options.key_forward)
-        inputState.watchWithModifiers('left', Options.key_left)
-        inputState.watchWithModifiers('back', Options.key_back)
-        inputState.watchWithModifiers('right', Options.key_right)
-
-        base.accept(Options.key_crouch, self.crouch, [True])
-        base.accept(Options.key_crouch + '-up', self.crouch, [False])
-        base.accept(Options.key_jump, self.jump)
-        base.accept(Options.key_ability1, self.ability1, [True])
-        base.accept(Options.key_ability1 + '-up', self.ability1, [False])
-        base.accept(Options.key_ability2, self.ability2, [True])
-        base.accept(Options.key_ability2 + '-up', self.ability2, [False])
-        base.accept(Options.key_ability3, self.ability3)
-
-        base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
-
-        if base.mouseWatcherNode.hasMouse():
-            win.center_cursor()
-            base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher', appendTask=True,
-                             extraArgs=[int(Options.mouse_sensitivity), Options.invert_mouse])
-
-            inputState.watchWithModifiers('fire1', Options.key_fire1)
-            inputState.watchWithModifiers('fire2', Options.key_fire2)
-
-    def mouse_watcher(self, sens, invert, task):
-        if App.paused:
-            return task.cont
-
-        md = base.win.getPointer(0)
-        x, y = md.getX(), md.getY()
-
-        win.center_cursor()
-        self.omega = (base.win.getXSize() / 2 - x) * sens * 5  # TODO проверить на разных разрешениях
-        self.yaw = self.yaw + self.omega
-
-        delta = (base.win.getYSize() / 2 - y) * sens / 50
-        delta *= [1, -1][invert]
-        self.pitch = self.pitch + delta
-        if self.pitch > 90:
-            self.pitch = 90
-        if self.pitch < -90:
-            self.pitch = -90
-
-        if inputState.isSet('fire1'):
-            self.fire1()
-        if inputState.isSet('fire2'):
-            self.fire2()
-
-        return task.cont
-
-    def keyboard_watcher(self, task):
-        if App.paused:
-            return task.cont
-
-        m = Vec3(0, 0, 0)
-        if inputState.isSet('forward'):
-            m.setY(1)
-        elif inputState.isSet('back'):
-            m.setY(-1)
-        if inputState.isSet('left'):
-            m.setX(-1)
-        elif inputState.isSet('right'):
-            m.setX(1)
-        self.movement = m
-
-        return task.cont
-
-    def set_camera(self, camera):
-        self.camera = camera
-        base.taskMgr.add(self.update_camera, 'player_camera')
-
-    def update_camera(self, task):
-        self.camera.setHpr(self.char.getH(), self.pitch, 0)
-        self.camera.setPos(self.char.movement_parent, 0, 0, (self.crouch_height if self.crouching else self.height)-.2)
-
-        return task.cont
-
-    def destroy(self):
-        Character.destroy(self)
-        base.taskMgr.remove('player_keyboard_watcher')
-        base.taskMgr.remove('player_mouse_watcher')
-        base.taskMgr.remove('player_camera')

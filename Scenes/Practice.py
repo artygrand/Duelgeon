@@ -10,9 +10,10 @@ from direct.gui.OnscreenText import OnscreenText
 from Utils.format import hex_to_rgb
 from Utils.geom import bullet_shape_from
 from App import prefab, Gui
-from App.Characters import Player
+from App.Characters import Character
 from App.Physics import World
 from Scenes.BaseScene import BaseScene
+from App.Player import Controller, Camera
 
 
 class Practice(BaseScene):
@@ -26,10 +27,9 @@ class Practice(BaseScene):
         self.physics = World()
         self.physics.node.reparentTo(self.root_node)
 
-        self.player = Player(self.physics.world, self.root_node, 'Player')
-        self.player.attach_controls()
-        self.player.set_camera(base.camera)
-        self.player.char.setPos(0, 0, 10)
+        self.player = Controller(Character(self.physics.world, self.root_node, 'Player'))
+        self.camera = Camera(self.player, base.camera)
+        self.player.set_camera(self.camera)
 
         self.char_marks = Gui.CharMarks()
         self.hud = Gui.HUD()
