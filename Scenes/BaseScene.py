@@ -1,31 +1,25 @@
 #!/usr/bin/env python3
 
+from direct.showbase.DirectObject import DirectObject
+
+import App
 from Utils import win
-from App.Gui import PauseMenu, OptionsMenu
 
 
-class BaseScene:
-    paused = False
-
+class BaseScene(DirectObject):
     def __init__(self):
-        self.pause_menu = PauseMenu()  # self.esc_handler
-        base.accept('Options', OptionsMenu)
+        DirectObject.__init__(self)
 
-    def esc_handler(self):
-        if self.paused:
-            self.pause_menu.hide()
-            win.hide_cursor()
-            win.center_cursor()
-            self.resume()
-        else:
-            self.pause()
-            win.show_cursor()
-            self.pause_menu.show()
-
-        self.paused = not self.paused
+        self.accept('Pause-game', self.pause)
+        self.accept('Resume-game', self.resume)
 
     def pause(self):
-        pass
+        App.paused = True
+        win.show_cursor()
 
     def resume(self):
-        pass
+        App.paused = False
+        win.hide_cursor()
+
+    def destroy(self):
+        self.ignoreAll()

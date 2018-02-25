@@ -2,11 +2,15 @@
 
 from panda3d.core import NodePath, Vec3
 from panda3d.bullet import BulletWorld, BulletDebugNode
+from direct.showbase.DirectObject import DirectObject
 
 import App
 
-class World:
+
+class World(DirectObject):
     def __init__(self):
+        DirectObject.__init__(self)
+
         self.node = NodePath('World')
         self.debug_node = self.node.attachNewNode(BulletDebugNode('Debug'))
 
@@ -15,7 +19,10 @@ class World:
         self.world.setDebugNode(self.debug_node.node())
 
         self.resume()
-        base.accept('f1', self.debug)
+        self.accept('f1', self.debug)
+
+        self.accept('Pause-game', self.pause)
+        self.accept('Resume-game', self.resume)
 
     def resume(self):
         base.taskMgr.add(self.update, 'update_world')

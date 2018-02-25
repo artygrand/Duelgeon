@@ -35,6 +35,7 @@ class Menu(BaseScene):
         self.ambientSound.setVolume(.7)
 
     def destroy(self):
+        BaseScene.destroy(self)
         self.root_node.removeNode()
         self.skybox.removeNode()
 

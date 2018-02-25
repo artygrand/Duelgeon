@@ -4,7 +4,6 @@ from direct.fsm.FSM import FSM
 
 from Scenes import *
 from Utils import win
-import App
 from App.Gui import PauseMenu, OptionsMenu, MainMenu, GameModesMenu
 from App.Console import DeveloperConsole
 
@@ -46,7 +45,6 @@ class GameManager(FSM):
 
         self.scene = Game.Game(self.scene_holder, mode)
         self.mgr = OverlayManager()
-        self.mgr.request('None')
 
         base.messenger.send('Loaded')
 
@@ -64,7 +62,6 @@ class GameManager(FSM):
 
         self.scene = Practice.Practice(self.scene_holder)
         self.mgr = OverlayManager()
-        self.mgr.request('None')
 
         base.messenger.send('Loaded')
 
@@ -143,7 +140,7 @@ class OverlayManager(FSM):
         self.pause = PauseMenu()
         self.options = OptionsMenu()
 
-        self.accept('Overlay-None', self.request, ['None'])
+        self.accept('Overlay-None', self.request, ['Off'])
         self.accept('Overlay-Pause', self.request, ['Pause'])
         self.accept('Overlay-Options', self.request, ['Options'])
         self.accept('Options-Back', self.request, ['Pause'])
@@ -155,22 +152,15 @@ class OverlayManager(FSM):
 
         self.ignoreAll()
 
-    def enterNone(self, hide=True):
-        App.paused = False
-        base.messenger.send('Resume-game')
-        if hide:  # TODO reformat
-            win.hide_cursor()
-
-    def exitNone(self):
-        App.paused = True
-        base.messenger.send('Pause-game')
-        win.show_cursor()
-
     def enterPause(self):
         self.pause.show()
+        if self.oldState == 'Off':
+            base.messenger.send('Pause-game')
 
     def exitPause(self):
         self.pause.hide()
+        if self.newState == 'Off':
+            base.messenger.send('Resume-game')
 
     def enterOptions(self):
         self.options.show()
@@ -180,7 +170,7 @@ class OverlayManager(FSM):
 
     def on_esc(self):
         if self.state == 'Pause':
-            self.request('None')
+            self.request('Off')
         else:
             self.request('Pause')
 

@@ -37,21 +37,12 @@ class Practice(BaseScene):
         self.load_scene()
 
     def destroy(self):
-        self.esc_handler()
+        BaseScene.destroy(self)
         self.char_marks.destroy()
-        self.pause_menu.destroy()
         self.hud.destroy()
         self.root_node.removeNode()
         self.skybox.removeNode()
         self.player.destroy()
-
-    def pause(self):
-        self.player.pause()
-        self.physics.pause()
-
-    def resume(self):
-        self.player.resume()
-        self.physics.resume()
 
     def load_scene(self):
         # ground
