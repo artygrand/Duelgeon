@@ -6,12 +6,14 @@ from Scenes import *
 from Utils import win
 import App
 from App.Gui import PauseMenu, OptionsMenu, MainMenu, GameModesMenu
+from App.Console import DeveloperConsole
 
 
 class GameManager(FSM):
     def __init__(self):
         FSM.__init__(self, 'GM')
 
+        self.console = ConsoleManager()
         self.mgr = None
         self.scene = None
         self.scene_holder = render.attachNewNode('Scene holder')
@@ -181,3 +183,22 @@ class OverlayManager(FSM):
             self.request('None')
         else:
             self.request('Pause')
+
+
+class ConsoleManager(FSM):
+    def __init__(self):
+        FSM.__init__(self, 'CM')
+
+        self.console = DeveloperConsole()
+
+        self.acceptOnce('`', self.request, ['Show'])
+
+    def enterShow(self):
+        base.messenger.send('Pause-game')
+        self.console.show()
+        self.acceptOnce('`', self.request, ['Hide'])
+
+    def enterHide(self):
+        base.messenger.send('Resume-game')
+        self.console.hide()
+        self.acceptOnce('`', self.request, ['Show'])
