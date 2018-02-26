@@ -13,6 +13,7 @@ class Controller(DirectObject):
     def __init__(self, char):
         DirectObject.__init__(self)
 
+        self.__noclip = False
         self.camera = None  # TODO use for sniper zoom
         self.dummy = Dummy()
         self.char = char
@@ -30,7 +31,7 @@ class Controller(DirectObject):
         self.unbind_keys()
         self.acceptOnce('Resume-game', self.resume)
 
-    def bind_keys(self, free=False):
+    def bind_keys(self):
         self.acceptOnce('Pause-game', self.pause)
         base.taskMgr.add(self.keyboard_watcher, 'player_keyboard_watcher')
 
@@ -39,7 +40,7 @@ class Controller(DirectObject):
         self.watch_tokens.append(inputState.watchWithModifiers('left', Options.key_left))
         self.watch_tokens.append(inputState.watchWithModifiers('right', Options.key_right))
 
-        if free:
+        if self.__noclip:
             self.watch_tokens.append(inputState.watchWithModifiers('up', Options.key_jump))
             self.watch_tokens.append(inputState.watchWithModifiers('down', Options.key_crouch))
         else:
@@ -58,7 +59,7 @@ class Controller(DirectObject):
             base.taskMgr.add(self.mouse_watcher, 'player_mouse_watcher', appendTask=True,
                              extraArgs=[Options.mouse_sensitivity, Options.invert_mouse])
 
-            if not free:
+            if not self.__noclip:
                 self.watch_tokens.append(inputState.watchWithModifiers('fire1', Options.key_fire1))
                 self.watch_tokens.append(inputState.watchWithModifiers('fire2', Options.key_fire2))
 
@@ -114,6 +115,8 @@ class Controller(DirectObject):
         return task.cont
 
     def noclip(self, on=True):
+        """base.scene.player.noclip()"""
+
         if on and type(self.char) is Dummy or not on and type(self.dummy) is Dummy:
             return
 
@@ -123,7 +126,8 @@ class Controller(DirectObject):
 
         self.dummy, self.char = self.char, self.dummy
         self.unbind_keys()
-        self.bind_keys(on)
+        self.__noclip = on
+        self.bind_keys()
 
     def get_hpr(self):
         return self.char.getHpr()
@@ -138,21 +142,28 @@ class Controller(DirectObject):
         self.camera = camera
 
 
-class Camera:
+class Camera(DirectObject):
     def __init__(self, player, camera):
-        self.zoomed = False
-        self.normal = Options.fov
-        self.zoom = Options.fov / 2
-        self.speed = 200.0
+        DirectObject.__init__(self)
+
+        self.__setup()
+        self.__zoom = self.__normal
+        self.zoom()
 
         self.player = player
         self.camera = camera
         self.controller = FirstPersonCam(player, camera)
 
         base.taskMgr.add(self.__update, 'player_camera')
+        self.accept('Options-changed', self.__setup)
 
     def destroy(self):
         base.taskMgr.remove('player_camera')
+        self.ignoreAll()
+
+    def __setup(self):
+        self.__zoom = self.__normal = Options.fov
+        base.camLens.setFov(self.__normal)
 
     def first(self):
         self.controller = FirstPersonCam(self.player, self.camera)
@@ -160,18 +171,27 @@ class Camera:
     def third(self):
         self.controller = ThirdPersonCam(self.player, self.camera)
 
-    def zoom(self, on=True):
-        self.zoomed = on
+    def zoom(self, val=0, speed=.05):
+        """base.scene.player.camera.zoom(2)"""
+
+        zoom = self.__normal if val == 0 else self.__normal / val
+        delta = (self.__zoom - zoom) * speed
+        self.__zoom = zoom
+
+        def upd(task):
+            fov = base.camLens.getFov()[0]
+            if abs(fov - self.__zoom) > .01:
+                base.camLens.setFov(fov - delta)
+                return task.cont
+
+            return
+
+        base.taskMgr.add(upd, 'zoom_camera')
+
+        return delta
 
     def __update(self, task):
         self.controller.update()
-
-        fov = base.camLens.getFov()[0]
-        if self.zoomed:
-            fov = max(self.zoom, fov - self.speed * globalClock.getDt())
-        else:
-            fov = min(self.normal, fov + self.speed * globalClock.getDt())
-        base.camLens.setFov(fov)
 
         return task.cont
 

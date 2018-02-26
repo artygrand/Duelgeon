@@ -83,7 +83,6 @@ class Options:
 
         win.toggle_fullscreen(cls.fullscreen)
         win.change_resolution(*cls.win_size.split())
-        base.camLens.setFov(float(cls.fov))
 
         if cls.volume == 0:
             base.disableAllAudio()
