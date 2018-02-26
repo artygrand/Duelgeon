@@ -78,9 +78,9 @@ class Controller(DirectObject):
 
         win.center_cursor()
 
-        self.char.omega = (base.win.getXSize() / 2 - x) * sens * 5  # TODO проверить на разных разрешениях
+        self.char.omega = (base.win.getXSize() / 2 - x) * sens
 
-        delta = (base.win.getYSize() / 2 - y) * sens / 50
+        delta = (base.win.getYSize() / 2 - y) * sens * globalClock.getDt()
         delta *= [1, -1][invert]
         pitch = self.char.pitch + delta
         if pitch > 90:
@@ -114,19 +114,17 @@ class Controller(DirectObject):
 
         return task.cont
 
-    def noclip(self, on=True):
+    def noclip(self):
         """base.scene.player.noclip()"""
 
-        if on and type(self.char) is Dummy or not on and type(self.dummy) is Dummy:
-            return
+        self.__noclip = not self.__noclip
 
-        if on:
+        if self.__noclip:
             self.dummy.setHpr(self.char.getHpr())
             self.dummy.setPos(self.char.getPos())
 
         self.dummy, self.char = self.char, self.dummy
         self.unbind_keys()
-        self.__noclip = on
         self.bind_keys()
 
     def get_hpr(self):

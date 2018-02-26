@@ -35,7 +35,7 @@ class Options:
     key_fire1 = 'mouse1'
     key_fire2 = 'mouse3'
 
-    mouse_sensitivity = 7
+    mouse_sensitivity = 35
     invert_mouse = 0
 
     @classmethod
