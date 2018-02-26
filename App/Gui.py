@@ -60,7 +60,7 @@ class CharMarks(HasFrame):
             p2 = full[0] * full3, full[1] * full3
 
         pos = aspect2d.getRelativePoint(render2d, Point3(p2[0], 0, p2[1]))
-        pos[2] = pos[2] + height * 4 / p3[1]
+        pos[2] = pos[2] + height / p3[1] * (-base.camLens.getFov()[0] + 150) / 26.666  # TODO fix fov amendment in zoom
 
         return pos[0], pos[2]
 
