@@ -38,12 +38,13 @@ class App(ShowBase):
 
         base.buttonThrowers[0].node().setButtonDownEvent('Any-key-pressed')
 
-        manager = GameManager()
+        self.scene = None
+        self.manager = GameManager()
         loading = Loading()
         loading.show()
 
         def start(task):
-            manager.request('Menu')
+            self.manager.request('Menu')
         self.taskMgr.doMethodLater(.1, start, 'Show menu')
 
     def get_user_dir(self):

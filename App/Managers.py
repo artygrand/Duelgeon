@@ -14,7 +14,7 @@ class GameManager(FSM):
 
         self.console = ConsoleManager()
         self.mgr = None
-        self.scene = None
+        base.scene = None
         self.scene_holder = render.attachNewNode('Scene holder')
 
         self.accept('Menu', self.request, ['Menu'])
@@ -27,7 +27,7 @@ class GameManager(FSM):
         self.ignoreAll()
 
     def enterMenu(self):
-        self.scene = Menu.Menu(self.scene_holder)
+        base.scene = Menu.Menu(self.scene_holder)
         self.mgr = MenuManager()
         self.mgr.request('Main')
 
@@ -36,14 +36,14 @@ class GameManager(FSM):
     def exitMenu(self):
         base.messenger.send('Loading')
 
-        self.scene.destroy()
+        base.scene.destroy()
         self.mgr.destroy()
         self.mgr = None
 
     def enterGame(self, mode):
         win.hide_cursor()
 
-        self.scene = Game.Game(self.scene_holder, mode)
+        base.scene = Game.Game(self.scene_holder, mode)
         self.mgr = OverlayManager()
 
         base.messenger.send('Loaded')
@@ -51,7 +51,7 @@ class GameManager(FSM):
     def exitGame(self):
         base.messenger.send('Loading')
 
-        self.scene.destroy()
+        base.scene.destroy()
         self.mgr.destroy()
         self.mgr = None
 
@@ -60,7 +60,7 @@ class GameManager(FSM):
     def enterTraining(self):
         win.hide_cursor()
 
-        self.scene = Practice.Practice(self.scene_holder)
+        base.scene = Practice.Practice(self.scene_holder)
         self.mgr = OverlayManager()
 
         base.messenger.send('Loaded')
@@ -68,14 +68,14 @@ class GameManager(FSM):
     def exitTraining(self):
         base.messenger.send('Loading')
 
-        self.scene.destroy()
+        base.scene.destroy()
         self.mgr.destroy()
         self.mgr = None
 
         win.show_cursor()
 
     def enterHeroEditor(self):
-        self.scene = HeroEditor.HeroEditor(self.scene_holder)
+        base.scene = HeroEditor.HeroEditor(self.scene_holder)
 
         self.accept('escape', self.request, ['Menu'])
 
@@ -84,7 +84,7 @@ class GameManager(FSM):
     def exitHeroEditor(self):
         base.messenger.send('Loading')
 
-        self.scene.destroy()
+        base.scene.destroy()
 
         self.ignore('escape')
 
