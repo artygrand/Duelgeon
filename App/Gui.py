@@ -4,6 +4,7 @@ from panda3d.core import Point2, Point3, VBase4, TextNode
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
+from direct.showbase.DirectObject import DirectObject
 
 from App.Options import Options
 from Utils.format import clamp_texture
@@ -154,8 +155,9 @@ class OptionsMenu(HasFrame):
         offset = .1
         height = len(items) * offset / 2
 
-        canvas = ScrollableFrame(canvasSize=(-.75, .75, -height - offset / 2, height), frameSize=(-.8, .8, -.95, .95),
-                                 scrollBarWidth=.02, parent=self.frame, frameColor=(0, 0, 0, 0)).canvas
+        self.scroll = ScrollableFrame(canvasSize=(-.75, .75, -height - offset / 2, height), scrollBarWidth=.02,
+                                      frameSize=(-.8, .8, -.95, .95), parent=self.frame, frameColor=(0, 0, 0, 0))
+        canvas = self.scroll.canvas
 
         pos_z = height - offset * .75
         for item in items:
@@ -182,6 +184,10 @@ class OptionsMenu(HasFrame):
                 pass
 
             pos_z -= offset
+
+    def destroy(self):
+        HasFrame.destroy(self)
+        self.scroll.destroy()
 
     def make_control(self, item, canvas, pos_z, offset):
         control = None
@@ -271,7 +277,7 @@ class OptionsMenu(HasFrame):
         dialog.removeNode()
 
 
-class ScrollableFrame:
+class ScrollableFrame(DirectObject):
     def __init__(self, horizontal=False, **kwargs):
         self.horizontal = horizontal
         self.frame = DirectScrolledFrame(**kwargs)
@@ -287,9 +293,12 @@ class ScrollableFrame:
         self.__canvas_range[0], self.__canvas_range[2] = abs(self.__canvas_range[0]), abs(self.__canvas_range[2])
         self.frame['horizontalScroll_value'] = self.frame['verticalScroll_value'] = 0
 
-        base.accept('mouse1', self.start_drag)
-        base.accept('wheel_up', self.scroll_up, [.2])
-        base.accept('wheel_down', self.scroll_down, [.2])
+        self.accept('mouse1', self.start_drag)
+        self.accept('wheel_up', self.scroll_up, [.2])
+        self.accept('wheel_down', self.scroll_down, [.2])
+
+    def destroy(self):
+        self.ignoreAll()
 
     def start_drag(self):
         if not self.is_hovered():
@@ -300,7 +309,7 @@ class ScrollableFrame:
         task = base.taskMgr.add(self.drag, 'scroll options')
         task.start_mouse = m
         task.canvas_orig_pos = self.canvas.getPos() - self.__canvas_start_pos
-        base.accept('mouse1-up', base.taskMgr.remove, [task])
+        self.accept('mouse1-up', base.taskMgr.remove, [task])
 
     def drag(self, task):
         m = base.mouseWatcherNode.getMouse()
