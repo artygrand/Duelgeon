@@ -13,40 +13,7 @@ import math
 
 
 class CharacterController:
-    """
-    The custom kinematic character controller for Panda3D, replacing the Bullet's default character
-    controller and providing more stability and features.
-    
-    Features included:
-        * Walking with penetration prevention
-        * Jumping with active and passive jump limiter. Active means limiting the max jump height based on
-          the distance to the "ceiling". Passive means falling automatically when a "ceiling" is hit.
-        * Crouching with stand up limiter which prevents the character from standing up if inside a tunnel
-          or other limited space
-        * Slope limiter of arbitrary maximum slope values which may or may not affect the movement speed
-          on slopes smaller than maximum
-        * Stepping, supports walking steps up and down (prevents "floating" effect)
-        * Flying support for no-clip, ladders, swimming or simply flying
-        * Simplified state system. Makes double/multiple jumps impossible by default 
-        * Callbacks for landing and standing up from crouch
-    
-    The controller is composed of a levitating capsule (allowing stepping), a kinematic body and numerous
-    raycasts accounting for levitation and spacial awareness.
-    The elements are set up automatically.
-    """
-
     def __init__(self, world, parent, walk_height, crouch_height, step_height, radius, gravity=None):
-        """
-        world -- (BulletWorld) the Bullet world.
-        parent -- (NodePath) where to parent the KCC elements
-        walk_height -- (float) height of the whole controller when walking
-        crouch_height -- (float) height of the whole controller when crouching
-        step_height -- (float) maximum step height the character can walk.
-        radius -- (float) capsule radius
-        gravity -- (float) gravity setting for the character controller, currently as float (gravity is always down).
-            The KCC may sometimes need a different gravity setting then the rest of the world. If this is not given,
-            the gravity is same as world's
-        """
 
         self.capsule, self.capsule_node, self.__capsule_h, self.__levitation = None, None, None, None
         self.__capsule_r, self.__h, self.__capsule_offset, self.__foot_distance = None, None, None, None
@@ -134,6 +101,8 @@ class CharacterController:
         self.__intelligent_jump = val
 
     def start_crouch(self):
+        if self.isCrouching:
+            return
         self.isCrouching = True
         self.__enabled_crouch = True
 
@@ -427,33 +396,19 @@ class CharacterController:
     def __prevent_penetration(self):
         collisions = Vec3()
 
-        ##########################################################
-        # This is a hacky version for when contactTest didn't work
-        # ~ for mf in self.__world.getManifolds():
-        # ~ if not (mf.getNumManifoldPoints() and self.capsule_node.node() in [mf.getNode0(), mf.getNode1()]):
-        # ~ continue
-        # ~
-        # ~ sign = 1 if mf.getNode0() == self.capsule_node.node() else -1
-        # ~
-        # ~ for m_point in mf.getManifoldPoints():
-        # ~ direction = m_point.getPositionWorldOnB() - m_point.getPositionWorldOnA()
-        # ~ normal = Vec3(direction)
-        # ~ normal.normalize()
-        # ~
-        # ~ if m_point.getDistance() < 0:
-        # ~ collisions -= direction * m_point.getDistance() * 2.0 * sign
-
-        result = self.__world.contactTest(self.capsule_node.node())
-
-        for i, contact in enumerate(result.getContacts()):
-            if type(contact.getNode1()) is BulletGhostNode:
+        for mf in self.__world.getManifolds():
+            if not (mf.getNumManifoldPoints() and self.capsule_node.node() in [mf.getNode0(), mf.getNode1()]):
                 continue
 
-            m_point = contact.getManifoldPoint()
-            normal = m_point.getPositionWorldOnB() - m_point.getPositionWorldOnA()
+            sign = 1 if mf.getNode0() == self.capsule_node.node() else -1
 
-            if m_point.getDistance() < 0:
-                collisions -= normal * m_point.getDistance()
+            for m_point in mf.getManifoldPoints():
+                direction = m_point.getPositionWorldOnB() - m_point.getPositionWorldOnA()
+                normal = Vec3(direction)
+                normal.normalize()
+
+                if m_point.getDistance() < 0:
+                    collisions -= direction * m_point.getDistance() * 2.0 * sign
 
         collisions.z = 0.0
         self.__current_pos += collisions
