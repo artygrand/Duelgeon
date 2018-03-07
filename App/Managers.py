@@ -18,8 +18,7 @@ class GameManager(FSM):
         self.scene_holder = render.attachNewNode('Scene holder')
 
         self.accept('Menu', self.request, ['Menu'])
-        for mode in ['Arcade', 'Hardcore', 'Coop', 'Versus']:
-            self.accept('Play-' + mode, self.request, ['Game', mode])
+        self.accept('Game', self.request, ['Game'])
         self.accept('Menu-Training', self.request, ['Training'])
         self.accept('Menu-Heroes', self.request, ['HeroEditor'])
 

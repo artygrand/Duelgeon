@@ -428,15 +428,15 @@ class GameModesMenu(HasFrame):
         )
 
         pos = base.a2dRight / 4
-        for cmd, text in {'Arcade': 'Arcade', 'Hardcore': 'Hardcore',
-                          'Coop': 'Coop', 'Versus': 'Versus'}.items():
+        for mode, text in {'Arcade': 'Arcade', 'Hardcore': 'Hardcore',
+                           'Coop': 'Coop', 'Versus': 'Versus'}.items():
             DirectButton(
                 text=text,
                 text_scale=0.07,
                 frameSize=(-.32, .32, -.08, .88),
                 pos=(base.a2dLeft + pos, 0, -.3),
                 command=base.messenger.send,
-                extraArgs=['Play-' + cmd],
+                extraArgs=['Game', [mode]],
                 rolloverSound=None,
                 clickSound=None,
                 relief=DGG.FLAT,
