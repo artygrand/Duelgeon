@@ -20,6 +20,7 @@ class Menu(BaseScene):
 
         self.root_node = root_node.attachNewNode('Menu')
 
+        base.camLens.setFov(75)
         self.skybox = prefab.skybox('maps/menu/tex/mountains')
         self.audio()
         self.background()
