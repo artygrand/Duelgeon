@@ -50,9 +50,9 @@ class Menu(BaseScene):
         scene = loader.loadModel('maps/menu/terrain')
         scene.reparentTo(self.root_node)
 
-        actor = Actor('actors/char', {'walk': 'actors/char-walk', 'hands': 'actors/char-hands'})
-        actor.reparentTo(scene)
-        actor.setPos(0, 1, 0)
+        self.actor = Actor('actors/char', {'walk': 'actors/char-walk', 'hands': 'actors/char-hands'})
+        self.actor.reparentTo(scene)
+        self.actor.setPos(0, 1, 0)
 
         moon = DirectionalLight('moon')
         moon.setColor(hex_to_rgb('4d5acc', brightness=.2))
