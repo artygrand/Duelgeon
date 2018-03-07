@@ -33,70 +33,78 @@ class Dummy:
     def turn(self, omega):
         self.__yaw = omega
 
-class Character:
-    name = 'Buster'
-    height = 1.75
-    crouch_height = 1.3
-    step_height = 0.3
-    radius = 0.4
-    speed = 5.5
-    jump_height = 1.5
-
-
-    yaw = 0
-    pitch = 0
-    crouching = False
-    movement = Vec3(0, 0, 0)
-    omega = 0
-
-    def __init__(self, world, parent, name):
-        self.name = name
-        self.char = CharacterController(world, parent, self.height, self.crouch_height, self.step_height, self.radius)
-
-        self.getHpr = self.char.getHpr
-        self.getPos = self.char.getPos
-
-
-
-
-
-
-        movement = copy(self.movement)
-        if movement.getY() > 0:
-            movement.setY(movement.getY() * 1.5)
-
-        self.char.set_linear_movement(movement * self.speed)
-        self.char.set_angular_movement(self.omega)
-        self.char.update()
-
-        return task.cont
+    def pitch(self, omega):
+        self.__pitch = omega
 
     def move(self, vector):
-        self.movement = vector
+        self.__move = vector
+
+
+class Character:
+    def __init__(self, world, parent, hero):
+        self.hero = hero
+        self.name = hero.get('name')
+        self.speed = hero.get('speed')
+        self.height = hero.get('height')
+
+        self.body = CharacterController(world, parent, self.height, hero.get('crouch_height'), .3, hero.get('width') / 2)
+
+        self.__move = Vec3(0)
+        self.__y_omega = 0
+        self.__p_omega = 0
+        self.__pitch = 0
+
+        self.getPos = self.body.node.getPos
+        self.setPos = self.body.node.setPos
+        self.getH = self.body.node.getH
+
+    def update(self, dt):
+        self.body.update(dt, self.__move * self.speed, self.__y_omega)
+
+        pitch = self.__pitch + self.__p_omega * dt
+        if pitch > 90:
+            pitch = 90
+        elif pitch < -90:
+            pitch = -90
+        self.__pitch = pitch
+
+    def getHpr(self):
+        # pitch = self.body.node.getNetTransform().getMat().getRow3(0)
+        # pitch = pitch.x * self.__pitch + pitch.y * self.__pitch + pitch.z * self.__pitch
+        return Vec3(self.body.node.getH(), self.__pitch, self.body.node.getR())
+
+    def getP(self):
+        return self.__pitch
+
+    def setHpr(self, hpr):
+        self.body.node.setH(hpr[0])
+        self.__pitch = hpr[1]
+
+    def get_cam_pos(self):
+        return self.body.node.getPos() + self.body.node.getQuat(render).xform(Vec3(0, 0, self.height - .15))
+
+    def move(self, vector):
+        if vector.getY() > 0:
+            vector.setY(vector.getY() * 1.5)
+        self.__move = vector
 
     def stop(self):
-        self.movement = Vec3(0, 0, 0)
+        self.__move = Vec3(0)
 
-    def rotate(self, omega):
-        self.omega = omega
+    def pitch(self, omega):
+        self.__p_omega = omega
+
+    def turn(self, omega):
+        self.__y_omega = omega
 
     def jump(self):
-
-        self.char.start_jump(self.jump_height)
+        self.body.jump(self.hero.get('jump_height'), limit=self.hero.jumps_limit, on_stop=self.hero.reset_jumps_limit)
 
     def crouch(self, start):
-        self.crouching = start
-
-        if start:
-            self.char.start_crouch()
-        else:
-            self.char.stop_crouch()
+        self.body.crouch(start)
 
     def fly(self, start):
-        if start:
-            self.char.start_fly()
-        else:
-            self.char.stop_fly()
+        self.body.float() if start else self.body.fall()
 
     def ability1(self, start):
         print('ability1', start)

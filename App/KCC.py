@@ -23,7 +23,7 @@ class CharacterController:
         self.__time_step = 0
         self.__current_pos = Vec3(0, 0, 0)
 
-        self.movement_parent = self.__parent.attachNewNode("Movement Parent")
+        self.node = self.__parent.attachNewNode("Movement Parent")
         self.__setup(walk_height, crouch_height, step_height, radius)
         self.__map_methods()
 
@@ -100,6 +100,9 @@ class CharacterController:
         """
         self.__intelligent_jump = val
 
+    def crouch(self, start):
+        self.start_crouch() if start else self.stop_crouch()
+
     def start_crouch(self):
         if self.isCrouching:
             return
@@ -139,28 +142,28 @@ class CharacterController:
         else:
             return self.__current_pos <= self.__foot_contact[0]
 
-    def start_jump(self, max_height=3.0):
+    def jump(self, max_height=3.0, **kwargs):
         """
         max height is 3.0 by default. Probably too much for most uses.
         """
         self.__jump(max_height)
 
-    def start_fly(self):
+    def float(self):
         self.movement_state = 'flying'
 
-    def stop_fly(self):
+    def fall(self):
         """
         Stop flying and start falling
         """
         self.__fall()
 
     def set_angular_movement(self, omega):
-        self.movement_parent.setH(self.movement_parent, omega * self.__time_step)
+        self.node.setH(self.node, omega * self.__time_step)
 
     def set_linear_movement(self, speed):
         self.__linear_velocity = speed
 
-    def update(self):
+    def update(self, dt, move, turn):
         """
         Update method. Call this around doPhysics.
         """
@@ -171,13 +174,15 @@ class CharacterController:
             "flying": self.__process_flying,
         }
 
-        self.__time_step = globalClock.getDt()
+        self.__time_step = dt
 
         self.__update_foot_contact()
         self.__update_head_contact()
 
         process_states[self.movement_state]()
 
+        self.set_angular_movement(turn)
+        self.set_linear_movement(move)
         self.__apply_linear_velocity()
         self.__prevent_penetration()
 
@@ -351,13 +356,13 @@ class CharacterController:
             break
 
     def __update_capsule(self):
-        self.movement_parent.setPos(self.__current_pos)
+        self.node.setPos(self.__current_pos)
         self.capsule_node.setPos(0, 0, self.__capsule_offset)
 
         self.__capsuleTop = self.__current_pos.z + self.__levitation + self.__capsule_h * 2.0
 
     def __apply_linear_velocity(self):
-        global_vel = self.movement_parent.getQuat(render).xform(self.__linear_velocity) * self.__time_step
+        global_vel = self.node.getQuat(render).xform(self.__linear_velocity) * self.__time_step
 
         if self.predict_future_space and not self.__check_future_space(global_vel):
             return
@@ -414,40 +419,40 @@ class CharacterController:
         self.__current_pos += collisions
 
     def __map_methods(self):
-        self.getHpr = self.movement_parent.getHpr
-        self.getH = self.movement_parent.getH
-        self.getP = self.movement_parent.getP
-        self.getR = self.movement_parent.getR
+        self.getHpr = self.node.getHpr
+        self.getH = self.node.getH
+        self.getP = self.node.getP
+        self.getR = self.node.getR
 
-        self.getPos = self.movement_parent.getPos
-        self.getX = self.movement_parent.getX
-        self.getY = self.movement_parent.getY
-        self.getZ = self.movement_parent.getZ
+        self.getPos = self.node.getPos
+        self.getX = self.node.getX
+        self.getY = self.node.getY
+        self.getZ = self.node.getZ
 
-        self.getQuat = self.movement_parent.getQuat
+        self.getQuat = self.node.getQuat
 
-        self.setHpr = self.movement_parent.setHpr
-        self.setH = self.movement_parent.setH
-        self.setP = self.movement_parent.setP
-        self.setR = self.movement_parent.setR
+        self.setHpr = self.node.setHpr
+        self.setH = self.node.setH
+        self.setP = self.node.setP
+        self.setR = self.node.setR
 
-        self.setQuat = self.movement_parent.setQuat
+        self.setQuat = self.node.setQuat
 
     def setPos(self, *args):
-        self.movement_parent.setPos(*args)
-        self.__current_pos = self.movement_parent.getPos(render)
+        self.node.setPos(*args)
+        self.__current_pos = self.node.getPos(render)
 
     def setX(self, *args):
-        self.movement_parent.setX(*args)
-        self.__current_x = self.movement_parent.getX(render)
+        self.node.setX(*args)
+        self.__current_x = self.node.getX(render)
 
     def setY(self, *args):
-        self.movement_parent.setY(*args)
-        self.__current_y = self.movement_parent.getY(render)
+        self.node.setY(*args)
+        self.__current_y = self.node.getY(render)
 
     def setZ(self, *args):
-        self.movement_parent.setZ(*args)
-        self.__current_z = self.movement_parent.getZ(render)
+        self.node.setZ(*args)
+        self.__current_z = self.node.getZ(render)
 
     def __setup(self, walk_h, crouch_h, step_h, radius):
         def set_data(full, step, r):
@@ -481,7 +486,7 @@ class CharacterController:
         # Walk Capsule
         self.__walk_capsule = BulletCapsuleShape(self.__walk_capsule_r, self.__walk_capsule_h)
 
-        self.__walk_capsule_node = self.movement_parent.attachNewNode(BulletRigidBodyNode('Capsule'))
+        self.__walk_capsule_node = self.node.attachNewNode(BulletRigidBodyNode('Capsule'))
         self.__walk_capsule_node.node().addShape(self.__walk_capsule)
         self.__walk_capsule_node.node().setKinematic(True)
         self.__walk_capsule_node.setCollideMask(BitMask32.allOn())
@@ -491,7 +496,7 @@ class CharacterController:
         # Crouch Capsule
         self.__crouch_capsule = BulletCapsuleShape(self.__crouch_capsule_r, self.__crouch_capsule_h)
 
-        self.__crouch_capsule_node = self.movement_parent.attachNewNode(BulletRigidBodyNode('crouchCapsule'))
+        self.__crouch_capsule_node = self.node.attachNewNode(BulletRigidBodyNode('crouchCapsule'))
         self.__crouch_capsule_node.node().addShape(self.__crouch_capsule)
         self.__crouch_capsule_node.node().setKinematic(True)
         self.__crouch_capsule_node.setCollideMask(BitMask32.allOn())
@@ -499,7 +504,6 @@ class CharacterController:
         # Set default
         self.capsule = self.__walk_capsule
         self.capsule_node = self.__walk_capsule_node
-        self.capsule_node.node().setMass(7.0)
 
         # Init
         self.__update_capsule()
