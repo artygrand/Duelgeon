@@ -14,6 +14,7 @@ from App.Characters import Character
 from App.Physics import World
 from Scenes.BaseScene import BaseScene
 from App.Player import Controller, Camera
+from App.Hero import get_active_hero, make_enemy
 
 
 class Practice(BaseScene):
@@ -27,9 +28,14 @@ class Practice(BaseScene):
         self.physics = World()
         self.physics.node.reparentTo(self.root_node)
 
-        self.player = Controller(Character(self.physics.world, self.root_node, 'Player'))
+        self.player = Controller(Character(self.physics.world, self.root_node, get_active_hero()))
         self.camera = Camera(self.player, base.camera)
         self.player.set_camera(self.camera)
+        self.player.char.setPos(0, -1, 5)
+        # self.player.char.body.up = Vec3(-1, 0, 0)
+        # self.player.char.body.node.setR(-180)
+
+        # self.enemy = AiController(Character(self.physics.world, self.root_node, make_enemy()))
 
         self.char_marks = Gui.CharMarks()
         self.hud = Gui.HUD()
@@ -87,7 +93,7 @@ class Practice(BaseScene):
         self.root_node.setLight(moon_np)
 
         # dynamic sphere
-        np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
+        np = self.root_node.attachNewNode(BulletRigidBodyNode('Sphere'))
         np.node().addShape(BulletSphereShape(1))
         np.node().setMass(3.0)
         np.setPos(5, 5, 2)
@@ -113,7 +119,7 @@ class Practice(BaseScene):
         self.char_marks.add('box', box, OnscreenText(text='cube', scale=0.06), 0.5)
 
         # static
-        np = self.root_node.attachNewNode(BulletRigidBodyNode('Box'))
+        np = self.root_node.attachNewNode(BulletRigidBodyNode('Static'))
         np.node().addShape(BulletBoxShape(Vec3(0.5, 0.5, 0.5)))
         np.setPos(1, 2, 0.8)
         self.physics.world.attachRigidBody(np.node())
