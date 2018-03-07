@@ -35,6 +35,7 @@ class Practice(BaseScene):
         self.hud = Gui.HUD()
 
         self.load_scene()
+        self.resume()
 
     def destroy(self):
         BaseScene.destroy(self)
@@ -43,6 +44,21 @@ class Practice(BaseScene):
         self.root_node.removeNode()
         self.skybox.removeNode()
         self.player.destroy()
+
+    def resume(self):
+        BaseScene.resume(self)
+        base.taskMgr.add(self.__update, 'update_scene')
+
+    def pause(self):
+        BaseScene.pause(self)
+        base.taskMgr.remove('update_scene')
+
+    def __update(self, task):
+        dt = globalClock.getDt()
+        self.physics.update(dt)
+        self.player.char.update(dt)
+
+        return task.cont
 
     def load_scene(self):
         # ground

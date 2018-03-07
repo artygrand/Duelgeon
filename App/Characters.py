@@ -42,7 +42,6 @@ class Character:
     speed = 5.5
     jump_height = 1.5
 
-    paused = False
 
     yaw = 0
     pitch = 0
@@ -57,21 +56,10 @@ class Character:
         self.getHpr = self.char.getHpr
         self.getPos = self.char.getPos
 
-        self.resume()
-        base.taskMgr.add(self.__update, 'update_char_' + self.name)
 
-    def resume(self):
-        App.paused = False
 
-    def pause(self):
-        App.paused = True
 
-    def destroy(self):
-        base.taskMgr.remove('update_char_' + self.name)
 
-    def __update(self, task):
-        if App.paused:
-            return task.cont
 
         movement = copy(self.movement)
         if movement.getY() > 0:
@@ -93,8 +81,6 @@ class Character:
         self.omega = omega
 
     def jump(self):
-        if App.paused:
-            return
 
         self.char.start_jump(self.jump_height)
 
@@ -113,31 +99,16 @@ class Character:
             self.char.stop_fly()
 
     def ability1(self, start):
-        if App.paused:
-            return
-
         print('ability1', start)
 
     def ability2(self, start):
-        if App.paused:
-            return
-
         print('ability2', start)
 
     def ability3(self):
-        if App.paused:
-            return
-
         print('ultimate start')
 
     def fire1(self):
-        if App.paused:
-            return
-
         print('primary fired')
 
     def fire2(self):
-        if App.paused:
-            return
-
         print('secondary fired')
