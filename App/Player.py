@@ -21,6 +21,9 @@ class Controller(DirectObject):
 
         self.bind_keys()
 
+        # TODO for dev only
+        base.nc = self.noclip
+
     def destroy(self):
         self.unbind_keys()
 
@@ -78,16 +81,8 @@ class Controller(DirectObject):
 
         win.center_cursor()
 
-        self.char.omega = (base.win.getXSize() / 2 - x) * sens
-
-        delta = (base.win.getYSize() / 2 - y) * sens * globalClock.getDt()
-        delta *= [1, -1][invert]
-        pitch = self.char.pitch + delta
-        if pitch > 90:
-            pitch = 90
-        elif pitch < -90:
-            pitch = -90
-        self.char.pitch = pitch
+        self.char.turn((base.win.getXSize() / 2 - x) * sens)
+        self.char.pitch((base.win.getYSize() / 2 - y) * sens * [1, -1][invert])
 
         if inputState.isSet('fire1'):
             self.char.fire1()
@@ -110,7 +105,7 @@ class Controller(DirectObject):
             m.setZ(1)
         elif inputState.isSet('down'):
             m.setZ(-1)
-        self.char.movement = m
+        self.char.move(m)
 
         return task.cont
 
@@ -126,15 +121,6 @@ class Controller(DirectObject):
         self.dummy, self.char = self.char, self.dummy
         self.unbind_keys()
         self.bind_keys()
-
-    def get_hpr(self):
-        return self.char.getHpr()
-
-    def get_pos(self):
-        return self.char.getPos()
-
-    def get_cam_pos(self):
-        return self.char.getPos() + (0, 0, 1.65)
 
     def set_camera(self, camera):
         self.camera = camera
@@ -200,8 +186,8 @@ class FirstPersonCam:
         self.camera = camera
 
     def update(self):
-        self.camera.setHpr(self.player.get_hpr())
-        self.camera.setPos(self.player.get_cam_pos())
+        self.camera.setHpr(self.player.char.getHpr())
+        self.camera.setPos(self.player.char.get_cam_pos())
 
 
 class ThirdPersonCam:

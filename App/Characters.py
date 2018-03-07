@@ -1,32 +1,37 @@
 #!/usr/bin/env python3
 
-from copy import copy
 from panda3d.core import Vec3
 
-import App
 from App.KCC import CharacterController
 
 
 class Dummy:
     def __init__(self):
         self.body = render.attachNewNode('Free camera')
-        self.movement = Vec3(0)
-        self.omega = 0
-        self.pitch = 0
+        self.__move = Vec3(0)
+        self.__yaw = 0
+        self.__pitch = 0
+        self.speed = 50
 
-        base.taskMgr.add(self.__update, 'update_dummy_character')
-
-        self.getHpr = self.body.getHpr
         self.getPos = self.body.getPos
-        self.setHpr = self.body.setHpr
         self.setPos = self.body.setPos
+        self.setHpr = self.body.setHpr
+        self.getHpr = self.body.getHpr
+        self.get_cam_pos = self.body.getPos
 
-    def __update(self, task):
-        self.body.setPos(self.body.getPos() + self.body.getQuat(render).xform(self.movement) / 4)
-        self.body.setHpr(self.body.getH() + self.omega * globalClock.getDt(), self.pitch, 0)
+    def update(self, dt):
+        self.body.setPos(self.body.getPos() + self.body.getQuat().xform(self.__move) * self.speed * dt)
+        self.body.setH(self.body.getH() + self.__yaw * dt)
 
-        return task.cont
+        pitch = self.body.getP() + self.__pitch * dt
+        if pitch > 90:
+            pitch = 90
+        elif pitch < -90:
+            pitch = -90
+        self.body.setP(pitch)
 
+    def turn(self, omega):
+        self.__yaw = omega
 
 class Character:
     name = 'Buster'
